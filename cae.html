@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C1 Advanced — Mock Exam Reports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --paper:#FAF8F3; --card:#FFFFFF; --ink:#2F3632; --muted:#6B736E; --line:#E4E1D8;
+  --sage:#8FA98F; --sage-l:#E7EFE6; --sage-d:#5E7A5F;
+  --lilac:#B7A8CF; --lilac-l:#EFEAF6; --lilac-d:#7D6A9E;
+  --amber:#D9A75A; --amber-l:#F8EEDC; --amber-d:#A87628;
+  --red:#B5524A; --red-l:#F6E3E0;
+  --navy:#003859;
+  --r:12px; --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:600;margin:0}
+.mono{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px 60px}
+/* hero */
+.back{display:inline-block;margin-top:18px;font-size:13px;color:var(--muted);text-decoration:none}
+.back:hover{color:var(--sage-d)}
+.hero{text-align:center;padding:14px 0 22px}
+.hero .mono{color:var(--sage-d)}
+.hero h1{font-size:38px;margin:6px 0 8px}
+.hero p{color:var(--muted);max-width:640px;margin:0 auto}
+/* sections */
+.sec{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px 22px;margin-top:18px}
+#s1{background:#F3EFF9;border-color:#DCD3EA}
+#s1 .num{background:#E3DAF1;color:var(--lilac-d)}
+#s1 .sec-h .hint,#s1 .note,#s1 .passrow label{color:#6E6488}
+.sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+.num{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--sage-d);background:var(--sage-l);border-radius:6px;padding:2px 8px}
+.sec-h h2{font-size:22px}
+.sec-h .hint{color:var(--muted);font-size:13px;margin-left:auto}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(3,minmax(0,280px))}
+.g2{grid-template-columns:1fr 1fr}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:500}
+input[type=text],input[type=number],select,textarea{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+textarea{min-height:110px;resize:vertical;font-family:"JetBrains Mono",monospace;font-size:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:8px 16px;font:inherit;font-size:14px;cursor:pointer;color:var(--muted)}
+.seg button.on{background:var(--sage);color:#fff}
+.passrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.passrow label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.passrow input{width:84px}
+.btn{font:inherit;font-size:14px;font-weight:500;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 14px;cursor:pointer;color:var(--ink);display:inline-flex;align-items:center;gap:7px}
+.btn:hover{border-color:var(--sage)}
+.btn.pri{background:var(--sage-d);border-color:var(--sage-d);color:#fff}
+.btn.pri:hover{background:#4f6a50}
+.btn svg{width:16px;height:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.drop{border:1.5px dashed var(--line);border-radius:var(--r);padding:22px;text-align:center;color:var(--muted);cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--sage);background:var(--sage-l)}
+.drop strong{color:var(--ink)}
+.logo-box{display:flex;align-items:center;gap:12px}
+.logo-prev{width:52px;height:52px;border-radius:8px;background:var(--navy);display:flex;align-items:center;justify-content:center;overflow:hidden;color:#fff;font-size:10px;font-weight:600}
+.logo-prev img{max-width:100%;max-height:100%}
+.note{font-size:12.5px;color:var(--muted)}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.stat{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.stat .v{font-family:Fraunces,serif;font-size:28px;font-weight:600;line-height:1.1}
+.stat .l{font-size:12px;color:var(--muted)}
+.stat.rec{border-top:3px solid var(--sage)} .stat.lim{border-top:3px solid var(--amber)} .stat.no{border-top:3px solid var(--red)}
+.skills{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.sk{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.sk .top{display:flex;justify-content:space-between;align-items:baseline}
+.sk .nm{font-weight:600}
+.sk .avg{font-family:Fraunces,serif;font-size:22px;font-weight:600}
+.bar{height:6px;background:#EEE;border-radius:4px;margin:8px 0 4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--sage)}
+.sk .meta{font-size:12px;color:var(--muted)}
+/* table */
+.tbl-wrap{overflow-x:auto;margin-top:16px}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th{text-align:left;font-weight:600;font-size:12px;color:var(--muted);padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.t td{padding:8px;border-bottom:1px solid #F0EEE8;white-space:nowrap}
+table.t tr{cursor:pointer}
+table.t tbody tr:hover{background:#FBFAF6}
+.g{font-family:"JetBrains Mono",monospace;font-size:13px}
+.fail{color:var(--red);font-weight:600}
+.inc{color:var(--muted);font-style:normal}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;border-radius:20px;padding:2px 10px}
+.pill.rec{background:var(--sage-l);color:var(--sage-d)}
+.pill.lim{background:var(--amber-l);color:var(--amber-d)}
+.pill.no{background:var(--red-l);color:var(--red)}
+.warn{display:inline-flex;align-items:center;gap:4px;color:var(--amber-d);font-size:12px}
+.warn svg{width:14px;height:14px}
+.alerts{margin-top:14px;border:1px solid var(--amber-l);background:#FDF8EE;border-radius:10px;padding:10px 14px;font-size:13px}
+.alerts ul{margin:6px 0 0;padding-left:18px}
+/* reports */
+.rep{display:grid;grid-template-columns:240px 1fr;gap:18px}
+.list{border:1px solid var(--line);border-radius:10px;max-height:900px;overflow:auto}
+.list button{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;border-bottom:1px solid #F0EEE8;background:#fff;padding:10px 12px;font:inherit;font-size:13.5px;cursor:pointer;text-align:left;gap:8px}
+.list button.on{background:var(--sage-l)}
+.list .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.dot.rec{background:var(--sage)} .dot.lim{background:var(--amber)} .dot.no{background:var(--red)}
+.pv-tools{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.pv-bg{background:#ECEAE4;border-radius:10px;padding:22px;overflow:auto}
+/* A4 preview */
+.a4{width:794px;min-height:1123px;margin:0 auto;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.12);padding:29px 48px 40px;font-family:"Century Gothic","URW Gothic","Avenir","Futura",sans-serif;font-size:14.6px;color:#000;line-height:1.35}
+.a4 .band{background:var(--navy);display:grid;grid-template-columns:250px 1fr;align-items:center;padding:12px 18px 10px;color:#fff;min-height:110px;margin-bottom:18px}
+.a4 .band .lg{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;letter-spacing:.08em}
+.a4 .band .lg img{max-width:230px;max-height:60px}
+.a4 .band .tx{text-align:center;font-size:20px;line-height:1.35}
+.a4 .addr{grid-column:1/-1;text-align:center;font-weight:700;font-size:10.6px;margin-top:10px;color:#fff}
+.a4 .data p{margin:0 0 6px}
+.a4 .data{margin-bottom:18px}
+.a4 table{width:100%;border-collapse:collapse}
+.a4 th{background:#595959;color:#fff;font-weight:700;font-size:16px;padding:7px 10px;border:1px solid #000;text-align:center}
+.a4 td{background:#F9F9F9;border:1px solid #000;padding:7px 12px;vertical-align:middle}
+.a4 td.n{text-align:center;width:30%;font-weight:400}
+.a4 td .ap{display:block;font-size:13px}
+.a4 .obs{margin-top:18px}
+.a4 .oh{background:#595959;color:#fff;font-weight:700;font-size:16px;padding:7px 10px;border:1px solid #000;break-after:avoid;page-break-after:avoid}
+.a4 .ob{background:#F9F9F9;border:1px solid #000;border-top-color:#BFBFBF;border-bottom-color:#BFBFBF;margin-top:-1px;padding:7px 12px;text-align:justify;position:relative;break-inside:avoid;page-break-inside:avoid}
+.a4 .ob:last-child{border-bottom-color:#000}
+.a4 .ob{padding-right:34px}
+.a4 .shuf{position:absolute;top:6px;right:6px;width:24px;height:24px;border:1px solid #CCC;border-radius:6px;background:#fff;cursor:pointer;font-size:14px;line-height:1;color:#555;font-family:Inter,sans-serif}
+.a4 .shuf:hover{border-color:var(--sage);color:var(--sage-d)}
+.a4 [contenteditable]{outline:none;border-radius:3px}
+.a4 [contenteditable]:hover{background:#FFF8E1}
+.a4 [contenteditable]:focus{background:#FFF3CC}
+.empty{color:var(--muted);text-align:center;padding:40px}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
+.hidden{display:none!important}
+@media (max-width:900px){.g4,.stats,.skills{grid-template-columns:1fr 1fr}.rep{grid-template-columns:1fr}.g2{grid-template-columns:1fr}}
+@media print{
+  body{background:#fff}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}
+  .a4 tr{break-inside:avoid;page-break-inside:avoid}
+  .a4 .band{break-inside:avoid}
+  .wrap>*:not(#s4),#s4 .sec-h,#s4 .list,#s4 .pv-tools{display:none!important}
+  #s4{border:0;box-shadow:none;padding:0;margin:0}
+  .rep{display:block}.pv-bg{background:none;padding:0}
+  .a4{box-shadow:none;width:auto;min-height:0;padding:0}
+  .a4 [contenteditable]:hover{background:none}
+  .a4 .shuf{display:none}
+  .a4 .ob{padding-right:12px}
+  @page{size:A4;margin:8mm 13mm}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a href="./" class="back">← Inicio</a>
+<header class="hero">
+  <div class="mono">C1 Advanced · Mock exam</div>
+  <h1>Informes del simulacro</h1>
+  <p>Sube el Excel con las notas y la página calcula las medias, decide la recomendación y redacta un informe por alumna, listo para descargar en Word.</p>
+</header>
+
+<!-- 01 AJUSTES -->
+<section class="sec" id="s1">
+  <div class="sec-h"><span class="num">01</span><h2>Ajustes</h2><span class="hint">Se guardan en este navegador</span></div>
+  <div class="grid g4">
+    <label class="f">Profesora<input type="text" id="teacher" placeholder="Nombre y apellido"></label>
+    <label class="f">Curso escolar<input type="text" id="curso" value="2026/27"></label>
+    <label class="f">Simulacro
+      <select id="sim"><option>Primer trimestre</option><option>Segundo trimestre</option><option>Tercer trimestre</option></select>
+    </label>
+  </div>
+  <div class="passrow" id="passRow"></div>
+  <p class="note" style="margin:10px 0 0">Recomendación: media mínima 6,2 y como máximo una destreza suspensa. Con las cuatro aprobadas y media 6,0–6,1: “recomendada, al límite”. El Speaking no cuenta para la media.</p>
+</section>
+
+<!-- 02 DATOS -->
+<section class="sec" id="s2">
+  <div class="sec-h"><span class="num">02</span><h2>Notas del simulacro</h2><span class="hint">Los datos no salen de tu ordenador</span></div>
+  <div style="max-width:620px;margin:0 auto">
+      <div class="drop" id="drop">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        <div><strong>Arrastra aquí el Excel</strong> o haz clic para elegirlo</div>
+        <div class="note">Los informes se generan al momento, con los datos de la hoja RESUMEN</div>
+        <input type="file" id="fileIn" accept=".xlsx,.xls,.csv" hidden>
+      </div>
+      <div class="row" style="margin-top:10px;justify-content:center"><span class="note" id="fileName"></span></div>
+  </div>
+</section>
+
+<!-- 03 GRUPO -->
+<section class="sec hidden" id="s3">
+  <div class="sec-h"><span class="num">03</span><h2>Resultados del grupo</h2><span class="hint">Haz clic en una alumna para ver su informe</span></div>
+  <div class="stats" id="stats"></div>
+  <div class="skills" id="skills"></div>
+  <div id="alerts"></div>
+  <div class="tbl-wrap"><table class="t" id="tbl"></table></div>
+</section>
+
+<!-- 04 INFORMES -->
+<section class="sec hidden" id="s4">
+  <div class="sec-h"><span class="num">04</span><h2>Informes</h2><span class="hint">↻ cambia una frase por otra · haz clic en un texto para retocarlo</span></div>
+  <div class="rep">
+    <div class="list" id="list"></div>
+    <div>
+      <div class="pv-tools">
+        <div class="row">
+          <button class="btn" id="prev">‹</button><button class="btn" id="next">›</button>
+          <span class="note" id="fname"></span>
+        </div>
+        <div class="row">
+          <button class="btn" id="reset" title="Deja el informe de esta alumna como estaba al principio">Deshacer cambios</button>
+          <button class="btn" id="print">PDF</button>
+          <button class="btn" id="one"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14"/></svg>Word</button>
+          <button class="btn pri" id="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14"/></svg>Todos en Word (.zip)</button>
+          <button class="btn" id="allpdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14"/></svg>Todos en PDF (.zip)</button>
+        </div>
+      </div>
+      <div class="pv-bg"><div class="a4" id="a4"></div></div>
+    </div>
+  </div>
+</section>
+
+<footer>Alina Iuga · versión 16/11 · 21:50</footer>
+</div>
+
+<script id="core">
+/* ===================== CORE: reglas y textos ===================== */
+const SKILLS = [
+  {k:'reading',   name:'Reading'},
+  {k:'uoe',       name:'Use of English'},
+  {k:'writing',   name:'Writing'},
+  {k:'listening', name:'Listening'}
+];
+const LEVELS = {
+  FCE:{ header:'NIVEL FIRST CERTIFICATE (B2)', pass:{reading:5.7,uoe:6.4,writing:6.0,listening:6.0,total:6.0}, file:'FCE' },
+  CAE:{ header:'NIVEL ADVANCED (C1)',          pass:{reading:6.4,uoe:5.7,writing:6.0,listening:6.0,total:6.0}, file:'CAE' }
+};
+const REC_MIN = 6.2, LIMIT_MIN = 6.0;
+const INC_TEXT = 'Prueba no realizada. No hizo esta parte del examen al no asistir a la sesión correspondiente, por lo que no es posible valorar su rendimiento en esta destreza ni calcular una media global ajustada al criterio oficial de Cambridge.';
+
+const fmt = x => (Math.round(x*10+1e-9)/10).toFixed(1).replace('.',',');
+const r1  = x => Math.round(x*10+1e-9)/10;
+
+function parseGrade(v){
+  if(v===undefined||v===null) return null;
+  const s=String(v).trim();
+  if(s==='') return null;
+  if(/incomplet|no\s*real|no\s*present|^n\/?p$|^-$/i.test(s)) return 'INC';
+  const n=parseFloat(s.replace(',','.'));
+  return isNaN(n)?null:n;
+}
+function normClass(c){
+  const s=String(c||'').trim().toUpperCase();
+  const m=s.match(/^(\d)\s*º?\s*([A-Z])$/);
+  return m? m[1]+'º'+m[2] : s;
+}
+function normWord(v){ return String(v||'').trim().toUpperCase().replace(/\s*-\s*/g,'-').replace(/\s+/g,' '); }
+
+/* Detecta columnas por su título */
+function mapHeaders(h){
+  const idx={};
+  h.forEach((raw,i)=>{
+    const s=String(raw||'').toLowerCase().trim();
+    if(!s) return;
+    const set=(k)=>{ if(idx[k]===undefined) idx[k]=i; };
+    if(/classwork|attitude|actitud|trabajo/.test(s)) set('classwork');
+    else if(/attendance|asistencia/.test(s)) set('attendance');
+    else if(/speaking/.test(s)) set('speaking');
+    else if(/reading/.test(s)) set('reading');
+    else if(/uoe|use of english/.test(s)) set('uoe');
+    else if(/writing/.test(s)) set('writing');
+    else if(/listening/.test(s)) set('listening');
+    else if(/resultado|media|total/.test(s)) set('total');
+    else if(/nombre|name|alumna|student/.test(s)) set('name');
+    else if(/^class|^clase|^curso|grupo/.test(s)) set('cls');
+    else if(/^n[º°o]?\.?$|^n[º°]|n[uú]m/.test(s)) set('num');
+  });
+  return idx;
+}
+
+/* rows: array de arrays (con fila de títulos) -> alumnas */
+function rowsToStudents(rows){
+  const hi=rows.findIndex(r=>r.some(c=>/reading\s*grade/i.test(String(c||''))));
+  if(hi<0) throw new Error('No encuentro la fila de títulos: debe tener una columna “Reading Grade”.');
+  const idx=mapHeaders(rows[hi]);
+  const missing=SKILLS.filter(s=>idx[s.k]===undefined).map(s=>s.name);
+  if(missing.length) throw new Error('Faltan columnas: '+missing.join(', '));
+  const out=[];
+  rows.slice(hi+1).forEach((r,i)=>{
+    const g=k=> idx[k]===undefined? '' : r[idx[k]];
+    const anyGrade=SKILLS.some(s=>String(g(s.k)||'').trim()!=='');
+    if(!anyGrade) return;
+    out.push({
+      num: String(g('num')||'').trim() || String(i+1),
+      name: String(g('name')||'').trim(),
+      cls: normClass(g('cls')),
+      grades: Object.fromEntries(SKILLS.map(s=>[s.k,parseGrade(g(s.k))])),
+      excelTotal: parseGrade(g('total')),
+      speaking: normWord(g('speaking')),
+      attendance: normWord(g('attendance')),
+      classwork: normWord(g('classwork'))
+    });
+  });
+  return out;
+}
+
+/* Comentarios por destreza y banda: d = cómo va, a = consejo (se combinan) */
+const HIGH_A=['Debe seguir así.','Le animamos a mantener este nivel con práctica regular.','Es un buen punto de apoyo para el resto del examen.','Solo necesita mantener la práctica para conservar este resultado.'];
+const BANK = {
+  reading:{
+    low:{d:['Tiene dificultades importantes para comprender los textos, tanto la idea global como la información específica.','Le cuesta seguir el hilo de los textos y localizar la información que piden las preguntas.','Su comprensión lectora está todavía lejos del nivel exigido: falla tanto en las preguntas generales como en las de detalle.','Muestra bastantes dificultades en la lectura, sobre todo en los textos largos y en las preguntas que exigen leer con detalle.'],
+         a:['Le conviene leer a diario textos breves en inglés y practicar las Parts 5, 6, 7 y 8 con el tiempo controlado.','Le recomendamos leer un poco cada día (artículos, relatos graduados) y hacer prácticas de examen con regularidad.','Debe dedicar tiempo cada semana a la lectura en inglés y practicar localizando en el texto la evidence (prueba) de cada respuesta.','Le ayudará mucho leer en inglés de forma habitual y repasar en clase por qué cada respuesta es la correcta.']},
+    near:{d:['Se queda cerca del aprobado: entiende la idea general, pero falla en las preguntas que exigen leer con detalle.','Está a poca distancia del aprobado. Comprende el sentido general de los textos, aunque pierde puntos en las preguntas de inferencia.','Roza el aprobado. Localiza la información principal, pero le cuestan las preguntas sobre las opiniones y la intención del autor.','Le falta poco para aprobar: sigue bien los textos, pero comete errores en las preguntas más finas.'],
+          a:['Debe practicar localizando en el texto la evidence (prueba) de cada respuesta.','Le conviene leer las opciones con más calma y descartar las que no se apoyan en el texto.','Con práctica regular de las Parts 5 y 7 puede superar el aprobado.','Le recomendamos trabajar especialmente las preguntas de inference (deducción) y controlar mejor el tiempo.']},
+    pass:{d:['Comprende bien la idea general y localiza la información principal.','Buena comprensión lectora: sigue los textos sin dificultad y responde bien a la mayoría de las preguntas.','Lee con seguridad y entiende tanto el sentido general como buena parte de los detalles.','Supera el aprobado con una comprensión lectora sólida.'],
+          a:['Para afianzar el resultado, debe seguir trabajando las preguntas de inferencia y la gestión del tiempo.','Le conviene seguir leyendo en inglés con regularidad para ganar velocidad.','Puede mejorar aún más prestando atención a las preguntas sobre la opinión y la intención del autor.','Debe mantener la práctica para que este resultado sea estable el día del examen.']},
+    high:{d:['Muy buena comprensión lectora: entiende tanto la idea global como los detalles y las opiniones de los textos.','Excelente resultado: lee con soltura y responde con precisión incluso a las preguntas más difíciles.','Destaca en Reading: comprende los textos con facilidad y capta los matices.','Su comprensión lectora es uno de sus puntos fuertes.'],a:HIGH_A}
+  },
+  uoe:{
+    low:{d:['Presenta carencias en gramática y vocabulario, especialmente en phrasal verbs (verbos con partícula), collocations (combinaciones de palabras) y word formation (formación de palabras).','Tiene dificultades en las cuatro partes de Use of English, sobre todo en word formation (formación de palabras) y key word transformations (transformación de frases).','Su gramática y su vocabulario están todavía por debajo del nivel exigido, y es una parte del examen en la que pierde muchos puntos.','Le falta base en vocabulario y estructuras del nivel: falla a menudo en collocations (combinaciones de palabras) y en las preposiciones.'],
+         a:['Es una destreza que debe reforzar: le recomendamos repasar vocabulario a diario y hacer ejercicios de las cuatro partes cada semana.','Le conviene llevar una libreta de vocabulario y repasar los phrasal verbs (verbos con partícula) más frecuentes.','Debe practicar cada semana con ejercicios de examen y repasar los errores que comete en clase.','Le ayudará estudiar el vocabulario por temas y practicar la formación de palabras con prefijos y sufijos.']},
+    near:{d:['Se queda a poca distancia del aprobado: conoce la gramática del nivel, pero comete errores en collocations (combinaciones de palabras).','Está cerca de aprobar. Resuelve bien las partes de gramática, pero pierde puntos en word formation (formación de palabras).','Roza el aprobado. Tiene una base gramatical aceptable, aunque le cuestan las key word transformations (transformación de frases).','Le falta poco para aprobar: el problema principal está en el vocabulario y en las fixed expressions (expresiones fijas).'],
+          a:['Con práctica semanal de estas partes puede superar el aprobado.','Le recomendamos repasar listas de phrasal verbs (verbos con partícula) y collocations (combinaciones de palabras).','Debe practicar las transformaciones de frases fijándose en la estructura que exige cada palabra clave.','Le conviene repasar los prefijos y sufijos más habituales.']},
+    pass:{d:['Buen dominio de la gramática y el vocabulario del nivel.','Maneja con seguridad las estructuras del nivel y comete pocos errores.','Supera el aprobado con un buen conocimiento de la gramática y el vocabulario.','Resuelve bien las cuatro partes de Use of English.'],
+          a:['Debe seguir ampliando vocabulario, sobre todo phrasal verbs (verbos con partícula) y fixed expressions (expresiones fijas).','Puede mejorar trabajando las key word transformations (transformación de frases), que son las más exigentes.','Le conviene seguir repasando word formation (formación de palabras) para afianzar el resultado.','Debe mantener la práctica semanal para consolidar este nivel.']},
+    high:{d:['Excelente dominio de la gramática y el vocabulario del nivel, con muy pocos errores.','Destaca en Use of English: resuelve con precisión incluso las preguntas más difíciles.','Muy buen resultado, con un vocabulario amplio y una gramática sólida.','Use of English es uno de sus puntos fuertes.'],a:HIGH_A}
+  },
+  writing:{
+    low:{d:['Sus textos todavía no alcanzan el nivel exigido: les falta desarrollo de las ideas y organización en párrafos.','Tiene dificultades para escribir textos completos y bien organizados, y comete bastantes errores de gramática.','Sus writings son todavía demasiado sencillos para el nivel, con poca variedad de vocabulario y de estructuras.','Le cuesta responder a todos los puntos de la tarea y organizar las ideas con claridad.'],
+         a:['Le conviene escribir un texto a la semana y revisarlo a partir de las correcciones de clase.','Le recomendamos estudiar los modelos de clase y planificar cada texto antes de empezar a escribir.','Debe repasar la estructura de cada tipo de texto (essay, proposal, report, review) y practicar con regularidad.','Le ayudará hacer un pequeño esquema antes de escribir y repasar sus errores más frecuentes.']},
+    near:{d:['Se acerca al nivel exigido. Organiza el texto de forma adecuada, pero necesita desarrollar más las ideas.','Está cerca del aprobado: sus textos se entienden bien, aunque el vocabulario es todavía algo limitado.','Roza el aprobado. Responde a la tarea, pero le faltan linkers (conectores) y estructuras más variadas.','Le falta poco para aprobar: escribe con claridad, pero comete errores que le restan puntos.'],
+          a:['Debe usar un vocabulario y unos linkers (conectores) más variados.','Le conviene explicar cada idea con razones y ejemplos.','Le recomendamos revisar siempre el texto al final para corregir errores.','Debe cuidar el register (registro formal o informal) según el tipo de texto.']},
+    pass:{d:['Escribe textos bien organizados y adecuados a la tarea.','Buen nivel de expresión escrita: textos claros y con las ideas bien desarrolladas.','Supera el aprobado con writings correctos y bien estructurados.','Responde bien a las tareas y organiza sus textos con claridad.'],
+          a:['Puede mejorar ampliando el vocabulario y cuidando el register (registro formal o informal).','Le conviene usar estructuras más complejas para subir la nota.','Debe seguir practicando los distintos tipos de texto de la Part 2.','Puede ganar precisión gramatical revisando sus textos antes de entregarlos.']},
+    high:{d:['Muy buen nivel de expresión escrita: textos claros, bien desarrollados y con un vocabulario variado.','Destaca en Writing: escribe con soltura, precisión y un registro adecuado.','Excelente resultado, con textos bien organizados y ricos en vocabulario.','Writing es uno de sus puntos fuertes.'],a:HIGH_A}
+  },
+  listening:{
+    low:{d:['Tiene dificultades para seguir las grabaciones y captar información específica.','Le cuesta entender el inglés hablado a velocidad normal, sobre todo en las grabaciones largas.','Su comprensión auditiva está todavía lejos del nivel exigido y pierde información importante.','Muestra bastantes dificultades en el Listening, tanto en la idea general como en los detalles.'],
+         a:['Le recomendamos escuchar inglés a diario (podcasts o series con subtítulos en inglés).','Le conviene practicar las cuatro partes del Listening con regularidad.','Debe acostumbrarse a escuchar inglés fuera de clase, aunque sean unos minutos al día.','Le ayudará volver a escuchar las grabaciones de clase leyendo la transcripción.']},
+    near:{d:['Está cerca del aprobado. Entiende la idea general, pero pierde detalles importantes.','Roza el aprobado: sigue bien las grabaciones, aunque falla en las preguntas de detalle.','Le falta poco para aprobar. Comprende el sentido general, pero se despista con las respuestas trampa.','Se queda a poca distancia del aprobado, sobre todo por las partes de opción múltiple.'],
+          a:['Debe practicar leyendo las preguntas antes de escuchar y anotando palabras clave.','Le conviene escuchar inglés con más frecuencia para ganar agilidad.','Le recomendamos prestar atención a las palabras que cambian el sentido de la respuesta.','Con práctica regular puede superar el aprobado.']},
+    pass:{d:['Buena comprensión auditiva: sigue las grabaciones y capta la información principal.','Supera el aprobado y entiende bien las grabaciones.','Comprende con seguridad el inglés hablado del nivel.','Buen resultado en Listening, con pocos errores.'],
+          a:['Debe seguir escuchando inglés con regularidad para afianzar el resultado.','Puede mejorar prestando atención a los detalles y a las respuestas trampa.','Le conviene practicar con acentos variados.','Debe mantener la práctica para consolidar este nivel.']},
+    high:{d:['Excelente comprensión auditiva, tanto de la idea general como de los detalles.','Destaca en Listening: entiende las grabaciones con facilidad.','Muy buen resultado, con una comprensión auditiva muy sólida.','Listening es uno de sus puntos fuertes.'],a:HIGH_A}
+  }
+};
+const SP_TOP_A=['Debe seguir así.','Puede afinar la precisión gramatical para subir aún más.','Le animamos a seguir participando activamente en clase.'];
+const SPEAK = {
+  'BAJO':{d:['Le cuesta expresarse con fluidez y desarrollar sus respuestas.','Se expresa con mucha dificultad y con respuestas muy breves.','Le falta seguridad al hablar y a menudo se queda en blanco.'],
+          a:['Debe aprovechar las prácticas orales de clase y hablar en inglés siempre que pueda.','Le conviene practicar en voz alta las preguntas típicas de la prueba oral.','Le ayudará preparar vocabulario sobre temas habituales (estudios, tiempo libre, viajes).']},
+  'BAJO-MEDIO':{d:['Se comunica, pero con respuestas cortas y poca fluidez.','Se hace entender, aunque le cuesta desarrollar las ideas.','Responde a lo que se le pregunta, pero de forma muy breve.'],
+          a:['Debe practicar ampliando sus respuestas con razones y ejemplos.','Le conviene ganar seguridad participando más en las actividades orales.','Le recomendamos practicar la comparación de fotos de la Part 2.']},
+  'MEDIO':{d:['Se comunica de forma adecuada.','Se expresa con corrección y sin grandes dificultades.','Participa bien y mantiene la conversación.'],
+          a:['Puede ganar fluidez y precisión practicando las cuatro partes de la prueba oral.','Le conviene ampliar el vocabulario para dar respuestas más ricas.','Debe trabajar la interacción con su pareja en la Part 3.']},
+  'MEDIO-ALTO':{d:['Buena expresión oral, con fluidez y un vocabulario adecuado al nivel.','Se expresa con soltura y desarrolla bien sus ideas.','Habla con seguridad e interactúa bien con su pareja.'],a:SP_TOP_A},
+  'MUY ALTO':{d:['Excelente expresión oral: se expresa con gran fluidez, seguridad y un vocabulario muy rico.','Destaca claramente en Speaking: habla con naturalidad y precisión.','Su nivel oral está por encima del exigido, con respuestas muy desarrolladas.'],a:SP_TOP_A},
+  'ALTO':{d:['Excelente expresión oral: se expresa con fluidez, seguridad y un vocabulario variado.','Destaca en Speaking por su fluidez y su riqueza de vocabulario.','Muy buen nivel oral, con respuestas desarrolladas y naturales.'],a:SP_TOP_A}
+};
+const ATT = {
+  'REGULARMENTE':['constante',['Asiste a clase con regularidad, lo que favorece la continuidad de su preparación.','No falta a clase y aprovecha bien las sesiones de preparación.','Su asistencia es muy regular, algo fundamental para preparar el examen.']],
+  'NO SIEMPRE':['irregular',['No asiste a clase con regularidad, lo que afecta a la continuidad de su preparación.','Falta a clase con cierta frecuencia y pierde parte de la práctica.','Su asistencia es irregular; es importante que venga a todas las clases antes del examen.']]
+};
+const CW = {
+  'REGULAR':['regular',['Debe implicarse más en clase y hacer las tareas con constancia.','Necesita trabajar con más regularidad y entregar las tareas.','Su actitud en clase debe mejorar: le falta constancia en el trabajo.']],
+  'BUENA':['buena',['Trabaja bien en clase y muestra interés por mejorar.','Tiene una buena actitud y cumple con las tareas.','Participa en clase y trabaja de forma adecuada.']],
+  'MUY BUENA':['muy buena',['Muestra una actitud muy positiva, participa y trabaja con constancia.','Es muy trabajadora y participa activamente en clase.','Su actitud es excelente: constante, participativa y con ganas de mejorar.']]
+};
+const REC_TXT=['Su media ({m}) y sus resultados por destreza indican que puede presentarse al examen oficial con buenas perspectivas, siempre que mantenga el ritmo de trabajo.','Con una media de {m}, está preparada para presentarse al examen oficial con buenas perspectivas si sigue trabajando como hasta ahora.','Sus resultados (media de {m}) muestran un nivel adecuado para presentarse al examen oficial con buenas perspectivas, siempre que no baje el ritmo.'];
+const NO_END=['Le recomendamos seguir preparándose y valorar la convocatoria más adelante.','Con más preparación podrá presentarse en una convocatoria posterior.','Es preferible que siga trabajando y se presente cuando tenga todas las destrezas consolidadas.'];
+
+function band(g,p){ if(g<p-1) return 'low'; if(g<p) return 'near'; if(g<7.5) return 'pass'; return 'high'; }
+function list(names){ return names.length<2? names.join('') : names.slice(0,-1).join(', ')+' y '+names[names.length-1]; }
+function hash(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+
+function evaluate(st, level, ctx={}){
+  const P=LEVELS[level].pass;
+  const offs=ctx.offs||{};
+  const seed=[ctx.teacher||'',st.cls,st.num,st.name,SKILLS.map(s=>st.grades[s.k]).join(',')].join('|');
+  const one=(key,arr)=>arr[(hash(seed+key)+(offs[key]||0))%arr.length];
+  const two=(key,D,A)=>{ const n=D.length*A.length, idx=(hash(seed+key)+(offs[key]||0)*7)%n; return D[idx%D.length]+' '+A[Math.floor(idx/D.length)]; };
+  const warnings=[];
+  const done=SKILLS.filter(s=>typeof st.grades[s.k]==='number');
+  const inc =SKILLS.filter(s=>st.grades[s.k]==='INC');
+  SKILLS.filter(s=>st.grades[s.k]===null).forEach(s=>warnings.push(s.name+' sin nota'));
+  SKILLS.filter(s=>st.grades[s.k]===0).forEach(s=>warnings.push(s.name+' tiene un 0: si no hizo la prueba, escribe INCOMPLETO en el Excel'));
+  const fails=done.filter(s=>st.grades[s.k]<P[s.k]);
+  const mean = done.length? r1(done.reduce((a,s)=>a+st.grades[s.k],0)/done.length) : null;
+  const complete = done.length===4;
+  if(complete && typeof st.excelTotal==='number' && Math.abs(mean-r1(st.excelTotal))>0.05)
+    warnings.push('La media del Excel ('+fmt(st.excelTotal)+') no coincide con la calculada ('+fmt(mean)+'). Se usa la calculada.');
+  if(st.speaking && !SPEAK[st.speaking]) warnings.push('Speaking “'+st.speaking+'” no está en la escala');
+  const att=st.attendance==='REGULAR'?'REGULARMENTE':st.attendance;
+  if(att && !ATT[att]) warnings.push('Asistencia “'+st.attendance+'” no está en la escala');
+  if(st.classwork && !CW[st.classwork]) warnings.push('Actitud “'+st.classwork+'” no está en la escala');
+
+  /* recomendación */
+  const failNames=fails.map(s=>s.name);
+  const incReg = inc.length && st.classwork==='REGULAR';
+  let rec, recLabel, recWhy, recAlt=true;
+  if(incReg){
+    rec='no'; recLabel='NO RECOMENDADA, de momento, para presentarse al examen.'; recAlt=false;
+    recWhy='No ha podido evaluarse '+list(inc.map(s=>s.name))+' y su actitud y trabajo en clase es regular, lo que indica falta de compromiso con la preparación del examen.';
+  } else if(mean===null){
+    rec='no'; recAlt=false; recWhy='No hay notas suficientes para valorar su preparación.';
+  } else if(mean>=REC_MIN && fails.length<=1){
+    rec='rec'; recWhy=one('rec',REC_TXT).replace('{m}',fmt(mean));
+    if(fails.length===1) recWhy+=' Debe reforzar especialmente '+failNames[0]+' en las próximas semanas.';
+  } else if(fails.length===0 && mean>=LIMIT_MIN){
+    rec='lim'; recAlt=false;
+    recWhy='Aprueba todas las destrezas, pero está al límite del aprobado. Solo se recomienda que se presente si se compromete a una preparación intensa en las próximas semanas. Sin ella, el riesgo de suspender es alto.';
+  } else {
+    rec='no';
+    const parts=[];
+    if(fails.length>=2) parts.push('tiene '+(['','una','dos','tres','cuatro'][fails.length])+' destrezas suspensas ('+list(failNames)+'), y para presentarse al examen oficial necesita tener todas las partes escritas bien trabajadas');
+    if(mean<REC_MIN) parts.push((parts.length?'además, ':'')+'su media ('+fmt(mean)+') no alcanza el '+fmt(REC_MIN)+' que consideramos necesario para presentarse con buenas perspectivas');
+    recWhy=parts.join('; ')+'. '+one('rec',NO_END);
+    recWhy=recWhy.charAt(0).toUpperCase()+recWhy.slice(1);
+  }
+  if(inc.length && !incReg)
+    recWhy='Valoración realizada con las destrezas que sí realizó, ya que '+list(inc.map(s=>s.name))+' no pudo evaluarse. '+recWhy;
+  if(!recLabel) recLabel={rec:'RECOMENDADA para presentarse al examen.', lim:'RECOMENDADA, AL LÍMITE, para presentarse al examen.', no:'NO RECOMENDADA para presentarse al examen.'}[rec];
+
+  /* bloques de observaciones */
+  const blocks=SKILLS.map(s=>{
+    const g=st.grades[s.k];
+    if(g==='INC') return {key:s.k,head:s.name+': no realizada.', text:INC_TEXT};
+    if(g===null)  return {key:s.k,head:s.name+': sin nota.', text:''};
+    const passed=g>=P[s.k], b=BANK[s.k][band(g,P[s.k])];
+    return {key:s.k,alt:true,head:s.name+': '+fmt(g)+(passed?' (aprobada).':' (suspensa; aprobado en '+fmt(P[s.k])+').'), text:two(s.k,b.d,b.a)};
+  });
+  if(st.speaking){ const sp=SPEAK[st.speaking]; blocks.push({key:'speaking',alt:!!sp,head:'Speaking: '+st.speaking.toLowerCase()+'.', text:sp?two('speaking',sp.d,sp.a):''}); }
+  if(att){ const a=ATT[att]; blocks.push({key:'att',alt:!!a,head:'Asistencia: '+(a?a[0]:att.toLowerCase())+'.', text:a?one('att',a[1]):''}); }
+  if(st.classwork){ const c=CW[st.classwork]; blocks.push({key:'cw',alt:!!c,head:'Actitud y trabajo en clase: '+(c?c[0]:st.classwork.toLowerCase())+'.', text:c?one('cw',c[1]):''}); }
+  blocks.push({key:'rec',alt:recAlt,head:recLabel, text:recWhy, rec:true});
+
+  return { mean, complete, fails:failNames, rec, warnings, blocks,
+    totalText: inc.length? 'NO CALCULABLE' : (mean===null?'—':fmt(mean)), att };
+}
+
+function fileName(st, level, curso){
+  const y=String(curso).match(/(\d{4})\D+(\d{2,4})/);
+  const yy= y? y[1]+'-'+(y[2].length===2? y[1].slice(0,2)+y[2] : y[2]) : '2026-2027';
+  return 'Informe_Complementaria_'+LEVELS[level].file+'_'+yy+'_'+String(st.num).replace(/[^\w-]/g,'')+'.docx';
+}
+
+/* ===================== WORD (.docx) ===================== */
+function buildDocx(st, ev, cfg){
+  const D=docx;
+  const {Document,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,ShadingType,BorderStyle,AlignmentType,VerticalAlign,Header,ImageRun}=D;
+  const P=LEVELS[cfg.level].pass;
+  const F='Century Gothic';
+  const T=(text,o={})=>new TextRun({text,font:F,size:o.size||22,bold:!!o.bold,color:o.color});
+  const none={style:BorderStyle.NONE,size:0,color:'FFFFFF'};
+  const blk={style:BorderStyle.SINGLE,size:4,color:'000000'};
+  const gry={style:BorderStyle.SINGLE,size:4,color:'BFBFBF'};
+  const shade=c=>({fill:c,type:ShadingType.CLEAR,color:'auto'});
+  const M={top:90,bottom:90,left:140,right:140};
+
+  /* encabezado (solo 1ª página) */
+  const navy=shade('003859');
+  const logoKids = cfg.logo
+    ? [new Paragraph({alignment:AlignmentType.CENTER,children:[new ImageRun({data:cfg.logo.data,transformation:{width:cfg.logo.w,height:cfg.logo.h}})]})]
+    : [new Paragraph({alignment:AlignmentType.CENTER,children:[T('SENARA',{bold:true,size:32,color:'FFFFFF'})]})];
+  const band=new Table({
+    width:{size:100,type:WidthType.PERCENTAGE},
+    borders:{top:none,bottom:none,left:none,right:none,insideHorizontal:none,insideVertical:none},
+    rows:[new TableRow({children:[
+      new TableCell({width:{size:34,type:WidthType.PERCENTAGE},shading:navy,verticalAlign:VerticalAlign.CENTER,margins:{top:140,bottom:60,left:160,right:80},children:logoKids}),
+      new TableCell({width:{size:66,type:WidthType.PERCENTAGE},shading:navy,verticalAlign:VerticalAlign.CENTER,margins:{top:140,bottom:60,left:80,right:160},children:[
+        new Paragraph({alignment:AlignmentType.CENTER,children:[T('INFORME PRIME CAMBRIDGE',{size:30,color:'FFFFFF'})]}),
+        new Paragraph({alignment:AlignmentType.CENTER,children:[T(LEVELS[cfg.level].header,{size:30,bold:true,color:'FFFFFF'})]}),
+        new Paragraph({alignment:AlignmentType.CENTER,children:[T('CURSO '+cfg.curso,{size:30,color:'FFFFFF'})]})
+      ]})
+    ]}),
+    new TableRow({children:[
+      new TableCell({columnSpan:2,shading:navy,margins:{top:60,bottom:140,left:160,right:160},children:[
+        new Paragraph({alignment:AlignmentType.CENTER,children:[T('COLEGIO SENARA AVDA. MORATALAZ, 178 B, 28030 MADRID – TEL. 913 016 070 - info@senara.com',{size:16,bold:true,color:'FFFFFF'})]})
+      ]})
+    ]})]
+  });
+  const header=new Header({children:[band, new Paragraph({spacing:{after:120},children:[T('')]})]});
+
+  /* datos */
+  const dl=(l,v,after=80)=>new Paragraph({spacing:{after},children:[T(l,{bold:true}),T(v)]});
+  const data=[
+    dl('ALUMNA: ', st.name || ('Nº '+st.num)),
+    dl('CURSO: ', st.cls||''),
+    dl('PROFESORA: ', cfg.teacher||''),
+    dl('SIMULACRO: ', cfg.sim, 240)
+  ];
+
+  /* tabla destrezas */
+  const hcell=(txt,w,al=AlignmentType.CENTER,kn=false)=>new TableCell({width:{size:w,type:WidthType.PERCENTAGE},shading:shade('595959'),verticalAlign:VerticalAlign.CENTER,margins:M,
+    children:[new Paragraph({alignment:al,keepNext:kn,children:[T(txt,{bold:true,size:24,color:'FFFFFF'})]})]});
+  const bcell=(kids,w)=>new TableCell({width:{size:w,type:WidthType.PERCENTAGE},shading:shade('F9F9F9'),verticalAlign:VerticalAlign.CENTER,margins:M,children:kids});
+  const sk=(name,pass,val)=>new TableRow({cantSplit:true,children:[
+    bcell([new Paragraph({children:[T(name+':',{bold:true})]}), ...(pass!==null?[new Paragraph({children:[T('Aprobado: '+fmt(pass))]})]:[])],70),
+    bcell([new Paragraph({alignment:AlignmentType.CENTER,children:[T(val)]})],30)
+  ]});
+  const gtxt=g=> g==='INC'?'NO REALIZADA' : (g===null?'—':fmt(g));
+  const rows=[new TableRow({tableHeader:true,cantSplit:true,children:[hcell('DESTREZAS',70),hcell('NOTA',30)]})];
+  SKILLS.forEach(s=>rows.push(sk(s.name,P[s.k],gtxt(st.grades[s.k]))));
+  rows.push(sk('Resultado del simulacro',P.total,ev.totalText));
+  if(st.speaking) rows.push(sk('Speaking',null,st.speaking));
+  if(ev.att) rows.push(sk('Asistencia',null,ev.att));
+  if(st.classwork) rows.push(sk('Actitud y trabajo en clase',null,st.classwork));
+  const table=new Table({width:{size:100,type:WidthType.PERCENTAGE},borders:{top:blk,bottom:blk,left:blk,right:blk,insideHorizontal:blk,insideVertical:blk},rows});
+
+  /* observaciones */
+  const orows=[new TableRow({cantSplit:true,children:[hcell('OBSERVACIONES:',100,AlignmentType.LEFT,true)]})];
+  ev.blocks.forEach(b=>{
+    const kids=[new Paragraph({alignment:AlignmentType.JUSTIFIED,children:[T(b.head,{bold:true})]})];
+    if(b.text) kids.push(new Paragraph({alignment:AlignmentType.JUSTIFIED,children:[T(b.text)]}));
+    orows.push(new TableRow({cantSplit:true,children:[bcell(kids,100)]}));
+  });
+  const obs=new Table({width:{size:100,type:WidthType.PERCENTAGE},borders:{top:blk,bottom:blk,left:blk,right:blk,insideHorizontal:gry,insideVertical:none},rows:orows});
+
+  return new Document({
+    styles:{default:{document:{run:{font:F,size:22}}}},
+    sections:[{
+      properties:{titlePage:true,page:{size:{width:11906,height:16838},margin:{top:432,bottom:432,left:720,right:720,header:300,footer:300}}},
+      headers:{first:header, default:new Header({children:[new Paragraph('')]})},
+      children:[...data, table, new Paragraph({spacing:{after:0},children:[T('')]}), obs]
+    }]
+  });
+}
+</script>
+
+<script>
+/* ===================== UI ===================== */
+const LOGO='data:image/png;base64,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';
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem('b2rep_'+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('b2rep_'+k,JSON.stringify(v));}catch(e){}}};
+let cfg={teacher:store.get('teacher',''),level:'CAE',curso:store.get('curso','2026/27'),sim:store.get('sim','Primer trimestre'),logoUrl:LOGO,custom:store.get('pass',{})};
+let students=[], evals=[], cur=0, edits={}, shuf={}, auto={};
+
+function applyPass(){
+  const base=JSON.parse(JSON.stringify({FCE:{reading:5.7,uoe:6.4,writing:6.0,listening:6.0,total:6.0},CAE:{reading:6.4,uoe:5.7,writing:6.0,listening:6.0,total:6.0}}[cfg.level]));
+  Object.assign(base,cfg.custom[cfg.level]||{});
+  LEVELS[cfg.level].pass=base;
+}
+function renderPass(){
+  applyPass();
+  const P=LEVELS[cfg.level].pass;
+  const items=[...SKILLS,{k:'total',name:'Simulacro'}];
+  $('passRow').innerHTML='<span class="note" style="align-self:end;padding-bottom:9px">Notas de aprobado:</span>'+items.map(s=>`<label>${s.name}<input type="text" data-k="${s.k}" value="${fmt(P[s.k])}"></label>`).join('');
+  $('passRow').querySelectorAll('input').forEach(i=>i.onchange=()=>{
+    const n=parseFloat(i.value.replace(',','.')); if(isNaN(n)) return;
+    cfg.custom[cfg.level]=cfg.custom[cfg.level]||{}; cfg.custom[cfg.level][i.dataset.k]=n; store.set('pass',cfg.custom); i.value=fmt(n); refresh();
+  });
+}
+/* ajustes */
+$('teacher').value=cfg.teacher;
+$('teacher').oninput=e=>{cfg.teacher=e.target.value;store.set('teacher',cfg.teacher);refresh();};
+$('curso').value=cfg.curso; $('sim').value=cfg.sim;
+$('curso').oninput=e=>{cfg.curso=e.target.value;store.set('curso',cfg.curso);refresh();};
+$('sim').onchange=e=>{cfg.sim=e.target.value;store.set('sim',cfg.sim);refresh();};
+
+/* datos */
+const drop=$('drop');
+drop.onclick=()=>$('fileIn').click();
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over');};
+drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])readFile(e.dataTransfer.files[0]);};
+$('fileIn').onchange=e=>{if(e.target.files[0])readFile(e.target.files[0]);};
+function readFile(f){
+  $('fileName').textContent=f.name;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(r.result),{type:'array'});
+      let rows=null;
+      const all=wb.SheetNames.map(n=>({n,rr:XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''})}));
+      const isSum=o=>o.rr.some(x=>x.some(c=>/reading\s*grade/i.test(String(c))));
+      const pick=all.find(o=>/resumen/i.test(o.n)&&isSum(o))||all.find(isSum);
+      if(pick){
+        const head=pick.rr.slice(0,4).flat().join(' ').toUpperCase();
+        const found=/C1 ADVANCED/.test(head)?'CAE':/B2 FIRST/.test(head)?'FCE':/B1 PRELIMINARY/.test(head)?'PET':null;
+        const NM={FCE:'B2 First',CAE:'C1 Advanced',PET:'B1 Preliminary'};
+        if(found && found!==cfg.level) throw new Error('Este Excel es de '+NM[found]+' y esta página es de '+NM[cfg.level]+'. Vuelve al inicio y entra en la página de '+NM[found]+'.');
+        rows=pick.rr; $('fileName').textContent=f.name+' · hoja leída: '+pick.n;
+      }
+      if(!rows) throw new Error('No encuentro la hoja RESUMEN (ni ninguna hoja con la columna “Reading Grade”). Comprueba que subes el Excel correcto y que no se han cambiado los títulos de las columnas.');
+      load(rowsToStudents(rows));
+    }catch(err){alert(err.message);}
+  };
+  r.readAsArrayBuffer(f);
+}
+function parsePaste(txt){
+  const lines=txt.split(/\r?\n/).filter(l=>l.trim());
+  const sep=lines[0].includes('\t')?'\t':';';
+  return lines.map(l=>l.split(sep));
+}
+function load(list){
+  if(!list.length){alert('No hay filas con notas.');return;}
+  students=list; edits={}; shuf={}; cur=0; refresh();
+  $('s3').scrollIntoView({behavior:'smooth'});
+}
+
+/* Evita que dos alumnas reciban la misma frase en el mismo apartado */
+function offsFor(i){ const o={...(auto[i]||{})}; Object.entries(shuf[i]||{}).forEach(([k,v])=>o[k]=(o[k]||0)+v); return o; }
+function evalOne(i){ return evaluate(students[i],cfg.level,{teacher:cfg.teacher,offs:offsFor(i)}); }
+function computeAuto(){
+  auto={}; const used={};
+  students.forEach((s,i)=>{
+    auto[i]={};
+    for(let tries=0;tries<20;tries++){
+      const ev=evalOne(i); let clash=false;
+      ev.blocks.forEach(b=>{ if(b.alt && used[b.key] && used[b.key].has(b.text)){ auto[i][b.key]=(auto[i][b.key]||0)+1; clash=true; } });
+      if(!clash){ ev.blocks.forEach(b=>{ if(b.alt){ (used[b.key]=used[b.key]||new Set()).add(b.text); } }); break; }
+    }
+  });
+}
+/* render */
+function refresh(){
+  if(!students.length) return;
+  applyPass();
+  computeAuto();
+  evals=students.map((s,i)=>evalOne(i));
+  $('s3').classList.remove('hidden'); $('s4').classList.remove('hidden');
+  renderGroup(); renderList(); renderReport();
+}
+const W='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>';
+const label=s=>s.name||('Nº '+s.num);
+function renderGroup(){
+  const P=LEVELS[cfg.level].pass;
+  const n=students.length, c=k=>evals.filter(e=>e.rec===k).length;
+  const means=evals.filter(e=>e.complete).map(e=>e.mean);
+  const gm=means.length?means.reduce((a,b)=>a+b,0)/means.length:null;
+  $('stats').innerHTML=`
+    <div class="stat"><div class="v">${n}</div><div class="l">alumnas</div></div>
+    <div class="stat"><div class="v">${gm===null?'—':fmt(gm)}</div><div class="l">media del grupo</div></div>
+    <div class="stat rec"><div class="v">${c('rec')}</div><div class="l">recomendadas</div></div>
+    <div class="stat lim"><div class="v">${c('lim')}</div><div class="l">al límite</div></div>
+    <div class="stat no"><div class="v">${c('no')}</div><div class="l">no recomendadas</div></div>`;
+  $('skills').innerHTML=SKILLS.map(s=>{
+    const g=students.map(x=>x.grades[s.k]).filter(v=>typeof v==='number');
+    const avg=g.length?g.reduce((a,b)=>a+b,0)/g.length:null, ok=g.filter(v=>v>=P[s.k]).length;
+    const pct=g.length?Math.round(ok/g.length*100):0;
+    return `<div class="sk"><div class="top"><span class="nm">${s.name}</span><span class="avg">${avg===null?'—':fmt(avg)}</span></div>
+      <div class="bar"><i style="width:${pct}%"></i></div><div class="meta">${ok}/${g.length} aprueban · aprobado ${fmt(P[s.k])}</div></div>`;
+  }).join('');
+  const al=[];evals.forEach((e,i)=>e.warnings.forEach(w=>al.push(`<li><b>${label(students[i])}:</b> ${w}</li>`)));
+  $('alerts').innerHTML=al.length?`<div class="alerts"><span class="warn">${W}<b>Revisa ${al.length===1?'esto':'estos avisos'}</b></span><ul>${al.join('')}</ul></div>`:'';
+  const cell=(g,p)=>g==='INC'?'<td class="g inc">NO REAL.</td>':g===null?'<td class="g inc">—</td>':`<td class="g ${g<p?'fail':''}">${fmt(g)}</td>`;
+  const rl={rec:'Recomendada',lim:'Al límite',no:'No recomendada'};
+  $('tbl').innerHTML=`<thead><tr><th>Alumna</th><th>Curso</th>${SKILLS.map(s=>`<th>${s.name}</th>`).join('')}<th>Media</th><th>Speaking</th><th>Asistencia</th><th>Actitud</th><th>Recomendación</th><th></th></tr></thead><tbody>`+
+    students.map((s,i)=>{const e=evals[i];return `<tr data-i="${i}"><td><b>${label(s)}</b></td><td>${s.cls}</td>${SKILLS.map(k=>cell(s.grades[k.k],P[k.k])).join('')}
+      <td class="g ${e.mean!==null&&e.mean<P.total?'fail':''}"><b>${e.totalText==='NO CALCULABLE'?'N/C':e.totalText}</b></td><td>${s.speaking}</td><td>${e.att}</td><td>${s.classwork}</td>
+      <td><span class="pill ${e.rec}">${rl[e.rec]}</span></td><td>${e.warnings.length?`<span class="warn" title="${e.warnings.join(' · ')}">${W}</span>`:''}</td></tr>`;}).join('')+'</tbody>';
+  $('tbl').querySelectorAll('tbody tr').forEach(tr=>tr.onclick=()=>{cur=+tr.dataset.i;renderList();renderReport();$('s4').scrollIntoView({behavior:'smooth'});});
+}
+function renderList(){
+  $('list').innerHTML=students.map((s,i)=>`<button data-i="${i}" class="${i===cur?'on':''}"><span>${label(s)} <span class="note">${s.cls}</span></span><span class="dot ${evals[i].rec}"></span></button>`).join('');
+  $('list').querySelectorAll('button').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;renderList();renderReport();});
+}
+function blocksFor(i){ return evals[i].blocks.map((b,j)=>{const e=(edits[i]||{})[j];return e?{...b,...e}:b;}); }
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function renderReport(){
+  const s=students[cur], e=evals[cur], P=LEVELS[cfg.level].pass;
+  $('fname').textContent=fileName(s,cfg.level,cfg.curso);
+  const g=v=>v==='INC'?'NO REALIZADA':v===null?'—':fmt(v);
+  const row=(n,p,v)=>`<tr><td><b>${n}:</b>${p!==null?`<span class="ap">Aprobado: ${fmt(p)}</span>`:''}</td><td class="n">${v}</td></tr>`;
+  $('a4').innerHTML=`
+    <div class="band"><div class="lg">${cfg.logoUrl?`<img src="${cfg.logoUrl}" alt="">`:'SENARA'}</div>
+      <div class="tx">INFORME PRIME CAMBRIDGE<br><b>${LEVELS[cfg.level].header}</b><br>CURSO ${esc(cfg.curso)}</div>
+      <div class="addr">COLEGIO SENARA AVDA. MORATALAZ, 178 B, 28030 MADRID – TEL. 913 016 070 - info@senara.com</div></div>
+    <div class="data"><p><b>ALUMNA:</b> ${esc(label(s))}</p><p><b>CURSO:</b> ${esc(s.cls)}</p><p><b>PROFESORA:</b> ${esc(cfg.teacher)}</p><p><b>SIMULACRO:</b> ${esc(cfg.sim)}</p></div>
+    <table><thead><tr><th>DESTREZAS</th><th>NOTA</th></tr></thead><tbody>
+      ${SKILLS.map(k=>row(k.name,P[k.k],g(s.grades[k.k]))).join('')}
+      ${row('Resultado del simulacro',P.total,e.totalText)}
+      ${s.speaking?row('Speaking',null,s.speaking):''}${e.att?row('Asistencia',null,e.att):''}${s.classwork?row('Actitud y trabajo en clase',null,s.classwork):''}
+    </tbody></table>
+    <div class="obs"><div class="oh">OBSERVACIONES:</div>
+      ${blocksFor(cur).map((b,j)=>`<div class="ob">${b.alt?`<button class="shuf" data-j="${j}" data-k="${b.key}" title="Cambiar frase">↻</button>`:''}<div contenteditable="true" data-j="${j}" data-f="head"><b>${esc(b.head)}</b></div>${b.text!==''||!b.rec?`<div contenteditable="true" data-j="${j}" data-f="text">${esc(b.text)}</div>`:''}</div>`).join('')}
+    </div>`;
+  $('a4').querySelectorAll('.shuf').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k, j=+b.dataset.j; shuf[cur]=shuf[cur]||{}; shuf[cur][k]=(shuf[cur][k]||0)+1;
+    if(edits[cur]) delete edits[cur][j];
+    computeAuto(); evals=students.map((s,i)=>evalOne(i)); renderReport();
+  });
+  $('a4').querySelectorAll('[contenteditable]').forEach(el=>el.oninput=()=>{
+    edits[cur]=edits[cur]||{}; const j=+el.dataset.j; edits[cur][j]=edits[cur][j]||{}; edits[cur][j][el.dataset.f]=el.innerText.trim();
+  });
+}
+$('prev').onclick=()=>{if(cur>0){cur--;renderList();renderReport();}};
+$('next').onclick=()=>{if(cur<students.length-1){cur++;renderList();renderReport();}};
+$('reset').onclick=()=>{delete edits[cur];delete shuf[cur];computeAuto();evals=students.map((s,i)=>evalOne(i));renderReport();};
+$('print').onclick=()=>{ const t=document.title; document.title=fileName(students[cur],cfg.level,cfg.curso).replace('.docx',''); window.print(); setTimeout(()=>document.title=t,500); };
+
+/* PDF de todas (imagen del informe, paginado sin cortar bloques) */
+function pdfPagesHTML(i){
+  const s=students[i], e=evals[i], P=LEVELS[cfg.level].pass;
+  const g=v=>v==='INC'?'NO REALIZADA':v===null?'—':fmt(v);
+  const row=(n,p,v)=>`<tr><td><b>${n}:</b>${p!==null?`<span class="ap">Aprobado: ${fmt(p)}</span>`:''}</td><td class="n">${v}</td></tr>`;
+  const top=`<div class="band"><div class="lg">${cfg.logoUrl?`<img src="${cfg.logoUrl}" alt="">`:'SENARA'}</div>
+      <div class="tx">INFORME PRIME CAMBRIDGE<br><b>${LEVELS[cfg.level].header}</b><br>CURSO ${esc(cfg.curso)}</div>
+      <div class="addr">COLEGIO SENARA AVDA. MORATALAZ, 178 B, 28030 MADRID – TEL. 913 016 070 - info@senara.com</div></div>
+    <div class="data"><p><b>ALUMNA:</b> ${esc(label(s))}</p><p><b>CURSO:</b> ${esc(s.cls)}</p><p><b>PROFESORA:</b> ${esc(cfg.teacher)}</p><p><b>SIMULACRO:</b> ${esc(cfg.sim)}</p></div>
+    <table><thead><tr><th>DESTREZAS</th><th>NOTA</th></tr></thead><tbody>
+      ${SKILLS.map(k=>row(k.name,P[k.k],g(s.grades[k.k]))).join('')}
+      ${row('Resultado del simulacro',P.total,e.totalText)}
+      ${s.speaking?row('Speaking',null,s.speaking):''}${e.att?row('Asistencia',null,e.att):''}${s.classwork?row('Actitud y trabajo en clase',null,s.classwork):''}
+    </tbody></table>`;
+  const rows=blocksFor(i).map(b=>`<div class="ob" style="padding-right:12px"><div><b>${esc(b.head)}</b></div>${b.text?`<div>${esc(b.text)}</div>`:''}</div>`);
+  return {top,rows};
+}
+async function pdfBlob(i){
+  const {top,rows}=pdfPagesHTML(i);
+  const host=document.createElement('div'); host.style.cssText='position:fixed;left:-10000px;top:0';
+  document.body.appendChild(host);
+  const PAGE_H=1123;
+  const mk=(inner)=>{const d=document.createElement('div'); d.className='a4'; d.style.minHeight=PAGE_H+'px'; d.style.height=PAGE_H+'px'; d.style.boxShadow='none'; d.innerHTML=inner; host.appendChild(d); return d;};
+  const pages=[]; let pageRows=[], first=true;
+  const build=()=>(first?top:'')+`<div class="obs"${first?'':' style="margin-top:0"'}>${first?'<div class="oh">OBSERVACIONES:</div>':''}${pageRows.join('')}</div>`;
+  let d=mk(build());
+  for(const r of rows){
+    pageRows.push(r); d.innerHTML=build();
+    if(d.scrollHeight>PAGE_H && pageRows.length>1){
+      pageRows.pop(); d.innerHTML=build(); pages.push(d);
+      first=false; pageRows=[r]; d=mk(build());
+    }
+  }
+  pages.push(d);
+  const pdf=new jspdf.jsPDF({unit:'mm',format:'a4'});
+  for(let k=0;k<pages.length;k++){
+    const c=await html2canvas(pages[k],{scale:2,backgroundColor:'#ffffff',width:794,height:PAGE_H,windowWidth:794});
+    if(k) pdf.addPage();
+    pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',0,0,210,297);
+  }
+  host.remove();
+  return pdf.output('blob');
+}
+$('allpdf').onclick=async()=>{
+  const b=$('allpdf'), old=b.innerHTML;
+  try{
+    const zip=new JSZip();
+    for(let i=0;i<students.length;i++){ b.textContent='PDF '+(i+1)+' de '+students.length+'…'; zip.file(fileName(students[i],cfg.level,cfg.curso).replace('.docx','.pdf'), await pdfBlob(i)); }
+    save(await zip.generateAsync({type:'blob'}),'Informes_PDF_'+LEVELS[cfg.level].file+'_'+cfg.sim.replace(/\s+/g,'_')+'.zip');
+  }catch(err){ alert('No se pudieron crear los PDF: '+err.message); }
+  b.innerHTML=old;
+};
+
+/* descargas */
+async function logoForDocx(){
+  if(!cfg.logoUrl) return null;
+  const img=new Image(); img.src=cfg.logoUrl; await img.decode();
+  const maxW=180,maxH=50, k=Math.min(maxW/img.width,maxH/img.height);
+  const data=Uint8Array.from(atob(cfg.logoUrl.split(',')[1]),c=>c.charCodeAt(0));
+  return {data,w:Math.round(img.width*k),h:Math.round(img.height*k)};
+}
+async function blobFor(i,logo){
+  const ev={...evals[i],blocks:blocksFor(i)};
+  return docx.Packer.toBlob(buildDocx(students[i],ev,{level:cfg.level,curso:cfg.curso,sim:cfg.sim,teacher:cfg.teacher,logo}));
+}
+function save(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);}
+$('one').onclick=async()=>{try{save(await blobFor(cur,await logoForDocx()),fileName(students[cur],cfg.level,cfg.curso));}catch(err){alert('No se pudo crear el Word: '+err.message);}};
+$('all').onclick=async()=>{
+  try{
+    const b=$('all'); const old=b.innerHTML; b.textContent='Preparando…';
+    const logo=await logoForDocx(), zip=new JSZip();
+    for(let i=0;i<students.length;i++) zip.file(fileName(students[i],cfg.level,cfg.curso), await blobFor(i,logo));
+    save(await zip.generateAsync({type:'blob'}),'Informes_'+LEVELS[cfg.level].file+'_'+cfg.sim.replace(/\s+/g,'_')+'.zip');
+    b.innerHTML=old;
+  }catch(err){alert('No se pudieron crear los Word: '+err.message);}
+};
+
+renderPass();
+</script>
+</body>
+</html>

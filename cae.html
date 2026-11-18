@@ -224,7 +224,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   </div>
 </section>
 
-<footer>Alina Iuga · versión 16/11 · 22:00</footer>
+<footer>Alina Iuga · versión 18/11 · 13:50</footer>
 </div>
 
 <script id="core">
@@ -441,6 +441,32 @@ function evaluate(st, level, ctx={}){
     totalText: inc.length? 'NO CALCULABLE' : (mean===null?'—':fmt(mean)), att };
 }
 
+/* Writing con un solo writing: mira 2.1 y 2.2 en la hoja de puntuaciones */
+function writingMap(rr){
+  const hi=rr.findIndex(r=>r.some(c=>String(c).trim()==='2.1')&&r.some(c=>String(c).trim()==='2.2'));
+  if(hi<0) return null;
+  const c1=rr[hi].findIndex(c=>String(c).trim()==='2.1'), c2=rr[hi].findIndex(c=>String(c).trim()==='2.2');
+  const map={};
+  rr.slice(hi+1).forEach(r=>{
+    const n=String(r[0]??'').trim(); if(!/^\d+(\.0)?$/.test(n)) return;
+    const v=x=>{const p=parseGrade(x); return typeof p==='number'?p:null;};
+    map[String(parseInt(n))]={w1:v(r[c1]),w2:v(r[c2])};
+  });
+  return map;
+}
+function applySingleWriting(list,map){
+  if(!map) return;
+  list.forEach(st=>{
+    const m=map[String(parseInt(st.num))]; if(!m) return;
+    const one=(m.w1!==null)!==(m.w2!==null);
+    if(one && st.grades.writing!=='INC'){
+      const pts=m.w1!==null?m.w1:m.w2;
+      st.grades.writing=Math.round(pts/20*10*100)/100;
+      st.singleWriting=pts; st.excelTotal=null;
+    }
+  });
+}
+
 function fileName(st, level, curso){
   const y=String(curso).match(/(\d{4})\D+(\d{2,4})/);
   const yy= y? y[1]+'-'+(y[2].length===2? y[1].slice(0,2)+y[2] : y[2]) : '2026-2027';
@@ -585,7 +611,10 @@ function readFile(f){
         rows=pick.rr; $('fileName').textContent=f.name+' · hoja leída: '+pick.n;
       }
       if(!rows) throw new Error('No encuentro la hoja RESUMEN (ni ninguna hoja con la columna “Reading Grade”). Comprueba que subes el Excel correcto y que no se han cambiado los títulos de las columnas.');
-      load(rowsToStudents(rows));
+      const list=rowsToStudents(rows);
+      const mock=all.find(o=>o!==pick&&writingMap(o.rr));
+      if(mock) applySingleWriting(list,writingMap(mock.rr));
+      load(list);
     }catch(err){alert(err.message);}
   };
   r.readAsArrayBuffer(f);
@@ -645,7 +674,9 @@ function renderGroup(){
       <div class="bar"><i style="width:${pct}%"></i></div><div class="meta">${ok}/${g.length} aprueban · aprobado ${fmt(P[s.k])}</div></div>`;
   }).join('');
   const al=[];evals.forEach((e,i)=>e.warnings.forEach(w=>al.push(`<li><b>${label(students[i])}:</b> ${w}</li>`)));
-  $('alerts').innerHTML=al.length?`<div class="alerts"><span class="warn">${W}<b>Revisa ${al.length===1?'esto':'estos avisos'}</b></span><ul>${al.join('')}</ul></div>`:'';
+  const sw=students.filter(s=>s.singleWriting!==undefined);
+  const swHtml=sw.length?`<div class="alerts" style="background:#F1F6FB;border-color:#DCE7F2"><b>Writing calculado sobre un solo writing (nota sobre 20 pasada a 10):</b><ul>${sw.map(s=>`<li><b>${label(s)}:</b> ${String(s.singleWriting).replace(".",",")}/20 → ${fmt(s.grades.writing)}</li>`).join('')}</ul></div>`:'';
+  $('alerts').innerHTML=(al.length?`<div class="alerts"><span class="warn">${W}<b>Revisa ${al.length===1?'esto':'estos avisos'}</b></span><ul>${al.join('')}</ul></div>`:'')+swHtml;
   const cell=(g,p)=>g==='INC'?'<td class="g inc">NO REAL.</td>':g===null?'<td class="g inc">—</td>':`<td class="g ${g<p?'fail':''}">${fmt(g)}</td>`;
   const rl={rec:'Recomendada',lim:'Al límite',no:'No recomendada'};
   $('tbl').innerHTML=`<thead><tr><th>Alumna</th><th>Curso</th>${SKILLS.map(s=>`<th>${s.name}</th>`).join('')}<th>Media</th><th>Speaking</th><th>Asistencia</th><th>Actitud</th><th>Recomendación</th><th></th></tr></thead><tbody>`+

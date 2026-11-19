@@ -227,7 +227,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   </div>
 </section>
 
-<footer>Alina Iuga · versión 19/11 · 17:05</footer>
+<footer>Alina Iuga · versión 19/11 · 17:10</footer>
 </div>
 
 <script id="core">
@@ -538,7 +538,9 @@ function buildDocx(st, ev, cfg){
   SKILLS.forEach(s=>rows.push(sk(s.name,P[s.k],gtxt(st.grades[s.k]))));
   rows.push(sk('Resultado del simulacro',P.total,ev.totalText));
   const V=ev.vals||{speaking:st.speaking||'',att:ev.att||'',classwork:st.classwork||''};
-  rows.push(sk('Speaking',null,V.speaking)); rows.push(sk('Asistencia',null,V.att)); rows.push(sk('Actitud y trabajo en clase',null,V.classwork));
+  rows.push(sk('Speaking',null,V.speaking));
+  rows.push(new TableRow({cantSplit:true,children:[hcell('SEGUIMIENTO EN CLASE',70,AlignmentType.CENTER,true),hcell('VALORACIÓN',30,AlignmentType.CENTER,true)]}));
+  rows.push(sk('Asistencia',null,V.att)); rows.push(sk('Actitud y trabajo en clase',null,V.classwork));
   const table=new Table({width:{size:100,type:WidthType.PERCENTAGE},borders:{top:blk,bottom:blk,left:blk,right:blk,insideHorizontal:blk,insideVertical:blk},rows});
 
   /* observaciones */
@@ -708,7 +710,7 @@ function renderReport(){
     <table><thead><tr><th>DESTREZAS</th><th>NOTA</th></tr></thead><tbody>
       ${SKILLS.map(k=>row(k.name,P[k.k],g(s.grades[k.k]))).join('')}
       ${row('Resultado del simulacro',P.total,e.totalText)}
-      ${(()=>{const V=valsFor(cur), er=(n,k)=>`<tr><td><b>${n}:</b></td><td class="n"><div contenteditable="true" data-v="${k}">${esc(V[k])}</div></td></tr>`; return er('Speaking','speaking')+er('Asistencia','att')+er('Actitud y trabajo en clase','classwork');})()}
+      ${(()=>{const V=valsFor(cur), er=(n,k)=>`<tr><td><b>${n}:</b></td><td class="n"><div contenteditable="true" data-v="${k}">${esc(V[k])}</div></td></tr>`; return er('Speaking','speaking')+'<tr><th>SEGUIMIENTO EN CLASE</th><th>VALORACIÓN</th></tr>'+er('Asistencia','att')+er('Actitud y trabajo en clase','classwork');})()}
     </tbody></table>
     <div class="obs"><div class="oh">OBSERVACIONES:</div>
       ${blocksFor(cur).map((b,j)=>`<div class="ob">${b.alt?`<button class="shuf" data-j="${j}" data-k="${b.key}" title="Cambiar frase">↻</button>`:''}<div contenteditable="true" data-j="${j}" data-f="head"><b>${esc(b.head)}</b></div>${b.text!==''||!b.rec?`<div contenteditable="true" data-j="${j}" data-f="text">${esc(b.text)}</div>`:''}</div>`).join('')}
@@ -740,7 +742,7 @@ function pdfPagesHTML(i){
     <table><thead><tr><th>DESTREZAS</th><th>NOTA</th></tr></thead><tbody>
       ${SKILLS.map(k=>row(k.name,P[k.k],g(s.grades[k.k]))).join('')}
       ${row('Resultado del simulacro',P.total,e.totalText)}
-      ${(()=>{const V=valsFor(i); return row('Speaking',null,esc(V.speaking))+row('Asistencia',null,esc(V.att))+row('Actitud y trabajo en clase',null,esc(V.classwork));})()}
+      ${(()=>{const V=valsFor(i); return row('Speaking',null,esc(V.speaking))+'<tr><th>SEGUIMIENTO EN CLASE</th><th>VALORACIÓN</th></tr>'+row('Asistencia',null,esc(V.att))+row('Actitud y trabajo en clase',null,esc(V.classwork));})()}
     </tbody></table>`;
   const rows=blocksFor(i).map(b=>`<div class="ob" style="padding-right:12px"><div><b>${esc(b.head)}</b></div>${b.text?`<div>${esc(b.text)}</div>`:''}</div>`);
   return {top,rows};

@@ -187,8 +187,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
       <div class="drop" id="drop">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
         <div><strong>Arrastra aquí el Excel</strong> o haz clic para elegirlo</div>
-        <div class="note">Los informes se generan al momento, con los datos de la hoja RESUMEN</div>
-        <input type="file" id="fileIn" accept=".xlsx,.xls,.csv" hidden>
+        <div class="note">Excel (.xlsx, .xls), Google Sheets descargado como Excel, LibreOffice (.ods) o Numbers · los informes se generan al momento con la hoja RESUMEN</div>
+        <input type="file" id="fileIn" accept=".xlsx,.xls,.xlsm,.ods,.numbers,.csv" hidden>
       </div>
       <div class="row" style="margin-top:10px;justify-content:center"><span class="note" id="fileName"></span></div>
   </div>
@@ -227,7 +227,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   </div>
 </section>
 
-<footer>Alina Iuga · versión 19/11 · 17:10</footer>
+<footer>Alina Iuga · versión 19/11 · 17:15</footer>
 </div>
 
 <script id="core">
@@ -602,11 +602,19 @@ drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransf
 $('fileIn').onchange=e=>{if(e.target.files[0])readFile(e.target.files[0]);};
 function readFile(f){
   $('fileName').textContent=f.name;
+  if(/\.csv$/i.test(f.name)){ alert('Este archivo es .csv: ese formato guarda solo una hoja y sin fórmulas, así que no tiene la hoja RESUMEN. Guarda el Excel como .xlsx (Archivo → Guardar como / Descargar → Microsoft Excel) y súbelo otra vez.'); return; }
   const r=new FileReader();
   r.onload=()=>{
     try{
       const wb=XLSX.read(new Uint8Array(r.result),{type:'array'});
       let rows=null;
+      // Arreglo para .xls antiguos: los textos calculados con fórmula se leen como 0; se cogen de la celda de origen
+      Object.values(wb.Sheets).forEach(sh=>{ Object.keys(sh).forEach(a=>{ const c=sh[a];
+        if(a[0]==='!'||!c||!c.f||c.t!=='n'||c.v!==0) return;
+        const m=c.f.match(/'([^']+)'!\$?([A-Z]+)\$?(\d+)\)*$/); if(!m||!wb.Sheets[m[1]]) return;
+        const src=wb.Sheets[m[1]][m[2]+m[3]];
+        if(!src||src.v===''||src.v===undefined) delete sh[a]; else if(src.t==='s'){ c.t='s'; c.v=src.v; c.w=String(src.v); }
+      }); });
       const all=wb.SheetNames.map(n=>({n,rr:XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''})}));
       const isSum=o=>o.rr.some(x=>x.some(c=>/reading\s*grade/i.test(String(c))));
       const pick=all.find(o=>/resumen/i.test(o.n)&&isSum(o))||all.find(isSum);

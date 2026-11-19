@@ -133,6 +133,8 @@ table.t tbody tr:hover{background:#FBFAF6}
 .a4 [contenteditable]{outline:none;border-radius:3px}
 .a4 [contenteditable]:hover{background:#FFF8E1}
 .a4 [contenteditable]:focus{background:#FFF3CC}
+.a4 [contenteditable]:empty::before{content:'Escribe aquí…';color:#B0A890;font-style:normal}
+.a4 [contenteditable]{min-height:1.2em}
 .empty{color:var(--muted);text-align:center;padding:40px}
 footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
 .hidden{display:none!important}
@@ -148,6 +150,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   .a4{box-shadow:none;width:auto;min-height:0;padding:0}
   .a4 [contenteditable]:hover{background:none}
   .a4 .shuf{display:none}
+  .a4 [contenteditable]:empty::before{content:''}
   .a4 .ob{padding-right:12px}
   @page{size:A4;margin:8mm 13mm}
 }
@@ -224,7 +227,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   </div>
 </section>
 
-<footer>Alina Iuga · versión 19/11 · 13:50</footer>
+<footer>Alina Iuga · versión 19/11 · 17:00</footer>
 </div>
 
 <script id="core">
@@ -433,8 +436,11 @@ function evaluate(st, level, ctx={}){
     return {key:s.k,alt:true,head:s.name+': '+fmt(g)+(passed?' (aprobada).':' (suspensa; aprobado en '+fmt(P[s.k])+').'), text:two(s.k,b.d,b.a)};
   });
   if(st.speaking){ const sp=SPEAK[st.speaking]; blocks.push({key:'speaking',alt:!!sp,head:'Speaking: '+st.speaking.toLowerCase()+'.', text:sp?two('speaking',sp.d,sp.a):''}); }
+  else blocks.push({key:'speaking',head:'Speaking:',text:''});
   if(att){ const a=ATT[att]; blocks.push({key:'att',alt:!!a,head:'Asistencia: '+(a?a[0]:att.toLowerCase())+'.', text:a?one('att',a[1]):''}); }
+  else blocks.push({key:'att',head:'Asistencia:',text:''});
   if(st.classwork){ const c=CW[st.classwork]; blocks.push({key:'cw',alt:!!c,head:'Actitud y trabajo en clase: '+(c?c[0]:st.classwork.toLowerCase())+'.', text:c?one('cw',c[1]):''}); }
+  else blocks.push({key:'cw',head:'Actitud y trabajo en clase:',text:''});
   blocks.push({key:'rec',alt:recAlt,head:recLabel, text:recWhy, rec:true});
 
   return { mean, complete, fails:failNames, rec, warnings, blocks,
@@ -531,9 +537,8 @@ function buildDocx(st, ev, cfg){
   const rows=[new TableRow({tableHeader:true,cantSplit:true,children:[hcell('DESTREZAS',70),hcell('NOTA',30)]})];
   SKILLS.forEach(s=>rows.push(sk(s.name,P[s.k],gtxt(st.grades[s.k]))));
   rows.push(sk('Resultado del simulacro',P.total,ev.totalText));
-  if(st.speaking) rows.push(sk('Speaking',null,st.speaking));
-  if(ev.att) rows.push(sk('Asistencia',null,ev.att));
-  if(st.classwork) rows.push(sk('Actitud y trabajo en clase',null,st.classwork));
+  const V=ev.vals||{speaking:st.speaking||'',att:ev.att||'',classwork:st.classwork||''};
+  rows.push(sk('Speaking',null,V.speaking)); rows.push(sk('Asistencia',null,V.att)); rows.push(sk('Actitud y trabajo en clase',null,V.classwork));
   const table=new Table({width:{size:100,type:WidthType.PERCENTAGE},borders:{top:blk,bottom:blk,left:blk,right:blk,insideHorizontal:blk,insideVertical:blk},rows});
 
   /* observaciones */
@@ -687,6 +692,7 @@ function renderList(){
   $('list').innerHTML=students.map((s,i)=>`<button data-i="${i}" class="${i===cur?'on':''}"><span>${label(s)} <span class="note">${s.cls}</span></span><span class="dot ${evals[i].rec}"></span></button>`).join('');
   $('list').querySelectorAll('button').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;renderList();renderReport();});
 }
+function valsFor(i){ const s=students[i], e=evals[i]; return {speaking:s.speaking||'',att:e.att||'',classwork:s.classwork||'',...((edits[i]||{}).vals||{})}; }
 function blocksFor(i){ return evals[i].blocks.map((b,j)=>{const e=(edits[i]||{})[j];return e?{...b,...e}:b;}); }
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function renderReport(){
@@ -702,7 +708,7 @@ function renderReport(){
     <table><thead><tr><th>DESTREZAS</th><th>NOTA</th></tr></thead><tbody>
       ${SKILLS.map(k=>row(k.name,P[k.k],g(s.grades[k.k]))).join('')}
       ${row('Resultado del simulacro',P.total,e.totalText)}
-      ${s.speaking?row('Speaking',null,s.speaking):''}${e.att?row('Asistencia',null,e.att):''}${s.classwork?row('Actitud y trabajo en clase',null,s.classwork):''}
+      ${(()=>{const V=valsFor(cur), er=(n,k)=>`<tr><td><b>${n}:</b></td><td class="n"><div contenteditable="true" data-v="${k}">${esc(V[k])}</div></td></tr>`; return er('Speaking','speaking')+er('Asistencia','att')+er('Actitud y trabajo en clase','classwork');})()}
     </tbody></table>
     <div class="obs"><div class="oh">OBSERVACIONES:</div>
       ${blocksFor(cur).map((b,j)=>`<div class="ob">${b.alt?`<button class="shuf" data-j="${j}" data-k="${b.key}" title="Cambiar frase">↻</button>`:''}<div contenteditable="true" data-j="${j}" data-f="head"><b>${esc(b.head)}</b></div>${b.text!==''||!b.rec?`<div contenteditable="true" data-j="${j}" data-f="text">${esc(b.text)}</div>`:''}</div>`).join('')}
@@ -712,7 +718,8 @@ function renderReport(){
     if(edits[cur]) delete edits[cur][j];
     computeAuto(); evals=students.map((s,i)=>evalOne(i)); renderReport();
   });
-  $('a4').querySelectorAll('[contenteditable]').forEach(el=>el.oninput=()=>{
+  $('a4').querySelectorAll('[data-v]').forEach(el=>el.oninput=()=>{ edits[cur]=edits[cur]||{}; edits[cur].vals=edits[cur].vals||{}; edits[cur].vals[el.dataset.v]=el.innerText.trim(); });
+  $('a4').querySelectorAll('[contenteditable][data-j]').forEach(el=>el.oninput=()=>{
     edits[cur]=edits[cur]||{}; const j=+el.dataset.j; edits[cur][j]=edits[cur][j]||{}; edits[cur][j][el.dataset.f]=el.innerText.trim();
   });
 }
@@ -733,7 +740,7 @@ function pdfPagesHTML(i){
     <table><thead><tr><th>DESTREZAS</th><th>NOTA</th></tr></thead><tbody>
       ${SKILLS.map(k=>row(k.name,P[k.k],g(s.grades[k.k]))).join('')}
       ${row('Resultado del simulacro',P.total,e.totalText)}
-      ${s.speaking?row('Speaking',null,s.speaking):''}${e.att?row('Asistencia',null,e.att):''}${s.classwork?row('Actitud y trabajo en clase',null,s.classwork):''}
+      ${(()=>{const V=valsFor(i); return row('Speaking',null,esc(V.speaking))+row('Asistencia',null,esc(V.att))+row('Actitud y trabajo en clase',null,esc(V.classwork));})()}
     </tbody></table>`;
   const rows=blocksFor(i).map(b=>`<div class="ob" style="padding-right:12px"><div><b>${esc(b.head)}</b></div>${b.text?`<div>${esc(b.text)}</div>`:''}</div>`);
   return {top,rows};
@@ -783,7 +790,7 @@ async function logoForDocx(){
   return {data,w:Math.round(img.width*k),h:Math.round(img.height*k)};
 }
 async function blobFor(i,logo){
-  const ev={...evals[i],blocks:blocksFor(i)};
+  const ev={...evals[i],blocks:blocksFor(i),vals:valsFor(i)};
   return docx.Packer.toBlob(buildDocx(students[i],ev,{level:cfg.level,curso:cfg.curso,sim:cfg.sim,teacher:cfg.teacher,logo}));
 }
 function save(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);}

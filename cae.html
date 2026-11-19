@@ -227,7 +227,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   </div>
 </section>
 
-<footer>Alina Iuga · versión 19/11 · 17:00</footer>
+<footer>Alina Iuga · versión 19/11 · 17:05</footer>
 </div>
 
 <script id="core">
@@ -430,7 +430,7 @@ function evaluate(st, level, ctx={}){
   /* bloques de observaciones */
   const blocks=SKILLS.map(s=>{
     const g=st.grades[s.k];
-    if(g==='INC') return {key:s.k,head:s.name+': no realizada.', text:INC_TEXT};
+    if(g==='INC') return {key:s.k,head:s.name+': prueba no realizada.', text:INC_TEXT};
     if(g===null)  return {key:s.k,head:s.name+': sin nota.', text:''};
     const passed=g>=P[s.k], b=BANK[s.k][band(g,P[s.k])];
     return {key:s.k,alt:true,head:s.name+': '+fmt(g)+(passed?' (aprobada).':' (suspensa; aprobado en '+fmt(P[s.k])+').'), text:two(s.k,b.d,b.a)};
@@ -533,7 +533,7 @@ function buildDocx(st, ev, cfg){
     bcell([new Paragraph({children:[T(name+':',{bold:true})]}), ...(pass!==null?[new Paragraph({children:[T('Aprobado: '+fmt(pass))]})]:[])],70),
     bcell([new Paragraph({alignment:AlignmentType.CENTER,children:[T(val)]})],30)
   ]});
-  const gtxt=g=> g==='INC'?'NO REALIZADA' : (g===null?'—':fmt(g));
+  const gtxt=g=> g==='INC'?'PRUEBA NO REALIZADA' : (g===null?'—':fmt(g));
   const rows=[new TableRow({tableHeader:true,cantSplit:true,children:[hcell('DESTREZAS',70),hcell('NOTA',30)]})];
   SKILLS.forEach(s=>rows.push(sk(s.name,P[s.k],gtxt(st.grades[s.k]))));
   rows.push(sk('Resultado del simulacro',P.total,ev.totalText));
@@ -698,7 +698,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 function renderReport(){
   const s=students[cur], e=evals[cur], P=LEVELS[cfg.level].pass;
   $('fname').textContent=fileName(s,cfg.level,cfg.curso);
-  const g=v=>v==='INC'?'NO REALIZADA':v===null?'—':fmt(v);
+  const g=v=>v==='INC'?'PRUEBA NO REALIZADA':v===null?'—':fmt(v);
   const row=(n,p,v)=>`<tr><td><b>${n}:</b>${p!==null?`<span class="ap">Aprobado: ${fmt(p)}</span>`:''}</td><td class="n">${v}</td></tr>`;
   $('a4').innerHTML=`
     <div class="band"><div class="lg">${cfg.logoUrl?`<img src="${cfg.logoUrl}" alt="">`:'SENARA'}</div>
@@ -731,7 +731,7 @@ $('print').onclick=()=>{ const t=document.title; document.title=fileName(student
 /* PDF de todas (imagen del informe, paginado sin cortar bloques) */
 function pdfPagesHTML(i){
   const s=students[i], e=evals[i], P=LEVELS[cfg.level].pass;
-  const g=v=>v==='INC'?'NO REALIZADA':v===null?'—':fmt(v);
+  const g=v=>v==='INC'?'PRUEBA NO REALIZADA':v===null?'—':fmt(v);
   const row=(n,p,v)=>`<tr><td><b>${n}:</b>${p!==null?`<span class="ap">Aprobado: ${fmt(p)}</span>`:''}</td><td class="n">${v}</td></tr>`;
   const top=`<div class="band"><div class="lg">${cfg.logoUrl?`<img src="${cfg.logoUrl}" alt="">`:'SENARA'}</div>
       <div class="tx">INFORME PRIME CAMBRIDGE<br><b>${LEVELS[cfg.level].header}</b><br>CURSO ${esc(cfg.curso)}</div>

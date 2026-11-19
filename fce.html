@@ -224,7 +224,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   </div>
 </section>
 
-<footer>Alina Iuga · versión 18/11 · 13:50</footer>
+<footer>Alina Iuga · versión 19/11 · 12:10</footer>
 </div>
 
 <script id="core">
@@ -513,7 +513,7 @@ function buildDocx(st, ev, cfg){
   /* datos */
   const dl=(l,v,after=80)=>new Paragraph({spacing:{after},children:[T(l,{bold:true}),T(v)]});
   const data=[
-    dl('ALUMNA: ', st.name || ('Nº '+st.num)),
+    dl('ALUMNA: ', 'Nº '+st.num),
     dl('CURSO: ', st.cls||''),
     dl('PROFESORA: ', cfg.teacher||''),
     dl('SIMULACRO: ', cfg.sim, 240)
@@ -654,7 +654,7 @@ function refresh(){
   renderGroup(); renderList(); renderReport();
 }
 const W='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>';
-const label=s=>s.name||('Nº '+s.num);
+const label=s=>'Nº '+s.num+(s.name?' · '+s.name:'');
 function renderGroup(){
   const P=LEVELS[cfg.level].pass;
   const n=students.length, c=k=>evals.filter(e=>e.rec===k).length;
@@ -700,7 +700,7 @@ function renderReport(){
     <div class="band"><div class="lg">${cfg.logoUrl?`<img src="${cfg.logoUrl}" alt="">`:'SENARA'}</div>
       <div class="tx">INFORME PRIME CAMBRIDGE<br><b>${LEVELS[cfg.level].header}</b><br>CURSO ${esc(cfg.curso)}</div>
       <div class="addr">COLEGIO SENARA AVDA. MORATALAZ, 178 B, 28030 MADRID – TEL. 913 016 070 - info@senara.com</div></div>
-    <div class="data"><p><b>ALUMNA:</b> ${esc(label(s))}</p><p><b>CURSO:</b> ${esc(s.cls)}</p><p><b>PROFESORA:</b> ${esc(cfg.teacher)}</p><p><b>SIMULACRO:</b> ${esc(cfg.sim)}</p></div>
+    <div class="data"><p><b>ALUMNA:</b> Nº ${esc(s.num)}</p><p><b>CURSO:</b> ${esc(s.cls)}</p><p><b>PROFESORA:</b> ${esc(cfg.teacher)}</p><p><b>SIMULACRO:</b> ${esc(cfg.sim)}</p></div>
     <table><thead><tr><th>DESTREZAS</th><th>NOTA</th></tr></thead><tbody>
       ${SKILLS.map(k=>row(k.name,P[k.k],g(s.grades[k.k]))).join('')}
       ${row('Resultado del simulacro',P.total,e.totalText)}
@@ -731,7 +731,7 @@ function pdfPagesHTML(i){
   const top=`<div class="band"><div class="lg">${cfg.logoUrl?`<img src="${cfg.logoUrl}" alt="">`:'SENARA'}</div>
       <div class="tx">INFORME PRIME CAMBRIDGE<br><b>${LEVELS[cfg.level].header}</b><br>CURSO ${esc(cfg.curso)}</div>
       <div class="addr">COLEGIO SENARA AVDA. MORATALAZ, 178 B, 28030 MADRID – TEL. 913 016 070 - info@senara.com</div></div>
-    <div class="data"><p><b>ALUMNA:</b> ${esc(label(s))}</p><p><b>CURSO:</b> ${esc(s.cls)}</p><p><b>PROFESORA:</b> ${esc(cfg.teacher)}</p><p><b>SIMULACRO:</b> ${esc(cfg.sim)}</p></div>
+    <div class="data"><p><b>ALUMNA:</b> Nº ${esc(s.num)}</p><p><b>CURSO:</b> ${esc(s.cls)}</p><p><b>PROFESORA:</b> ${esc(cfg.teacher)}</p><p><b>SIMULACRO:</b> ${esc(cfg.sim)}</p></div>
     <table><thead><tr><th>DESTREZAS</th><th>NOTA</th></tr></thead><tbody>
       ${SKILLS.map(k=>row(k.name,P[k.k],g(s.grades[k.k]))).join('')}
       ${row('Resultado del simulacro',P.total,e.totalText)}

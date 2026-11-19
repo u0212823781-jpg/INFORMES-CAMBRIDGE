@@ -224,7 +224,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   </div>
 </section>
 
-<footer>Alina Iuga · versión 19/11 · 12:10</footer>
+<footer>Alina Iuga · versión 19/11 · 13:50</footer>
 </div>
 
 <script id="core">
@@ -612,8 +612,6 @@ function readFile(f){
       }
       if(!rows) throw new Error('No encuentro la hoja RESUMEN (ni ninguna hoja con la columna “Reading Grade”). Comprueba que subes el Excel correcto y que no se han cambiado los títulos de las columnas.');
       const list=rowsToStudents(rows);
-      const mock=all.find(o=>o!==pick&&writingMap(o.rr));
-      if(mock) applySingleWriting(list,writingMap(mock.rr));
       load(list);
     }catch(err){alert(err.message);}
   };

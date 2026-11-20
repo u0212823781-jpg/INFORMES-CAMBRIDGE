@@ -227,7 +227,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   </div>
 </section>
 
-<footer>Alina Iuga · versión 19/11 · 17:45</footer>
+<footer>Alina Iuga · versión 20/11 · 17:50</footer>
 </div>
 
 <script id="core">
@@ -308,6 +308,8 @@ function rowsToStudents(rows){
       classwork: normWord(g('classwork'))
     });
   });
+  // destreza vacía en una alumna que sí tiene otras notas = prueba no realizada
+  out.forEach(st=>{ const g=st.grades; if(SKILLS.some(x=>typeof g[x.k]==='number')) SKILLS.forEach(x=>{ if(g[x.k]===null) g[x.k]='INC'; }); });
   return out;
 }
 
@@ -404,7 +406,10 @@ function evaluate(st, level, ctx={}){
   const failNames=fails.map(s=>s.name);
   const incReg = inc.length && st.classwork==='REGULAR';
   let rec, recLabel, recWhy, recAlt=true;
-  if(incReg){
+  if(inc.length>=2){
+    rec='no'; recLabel='NO RECOMENDADA, de momento, para presentarse al examen.'; recAlt=false;
+    recWhy='No realizó '+list(inc.map(s=>s.name))+', por lo que no hay datos suficientes para valorar su preparación para el examen.';
+  } else if(incReg){
     rec='no'; recLabel='NO RECOMENDADA, de momento, para presentarse al examen.'; recAlt=false;
     recWhy='No ha podido evaluarse '+list(inc.map(s=>s.name))+' y su actitud y trabajo en clase es regular, lo que indica falta de compromiso con la preparación del examen.';
   } else if(mean===null){
@@ -423,7 +428,7 @@ function evaluate(st, level, ctx={}){
     recWhy=parts.join('; ')+'. '+one('rec',NO_END);
     recWhy=recWhy.charAt(0).toUpperCase()+recWhy.slice(1);
   }
-  if(inc.length && !incReg)
+  if(inc.length===1 && !incReg)
     recWhy='Valoración realizada con las destrezas que sí realizó, ya que '+list(inc.map(s=>s.name))+' no pudo evaluarse. '+recWhy;
   if(!recLabel) recLabel={rec:'RECOMENDADA para presentarse al examen.', lim:'RECOMENDADA, AL LÍMITE, para presentarse al examen.', no:'NO RECOMENDADA para presentarse al examen.'}[rec];
 

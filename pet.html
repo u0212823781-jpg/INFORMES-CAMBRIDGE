@@ -227,7 +227,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   </div>
 </section>
 
-<footer>Alina Iuga · versión 26/11 · 17:05</footer>
+<footer>Alina Iuga · versión 26/11 · 17:15</footer>
 </div>
 
 <script id="core">
@@ -391,7 +391,7 @@ function evaluate(st, level, ctx={}){
   const done=SKILLS.filter(s=>typeof st.grades[s.k]==='number');
   const inc =SKILLS.filter(s=>st.grades[s.k]==='INC');
   SKILLS.filter(s=>st.grades[s.k]===null).forEach(s=>warnings.push(s.name+' sin nota'));
-  SKILLS.filter(s=>st.grades[s.k]===0).forEach(s=>warnings.push(s.name+' tiene un 0: si no hizo la prueba, escribe INCOMPLETO en el Excel'));
+  SKILLS.filter(s=>st.grades[s.k]===0).forEach(s=>warnings.push(s.name+' tiene un 0: si no hizo la prueba, deja sus casillas vacías en el Excel'));
   const fails=done.filter(s=>st.grades[s.k]<P[s.k]);
   const mean = done.length? r1(done.reduce((a,s)=>a+st.grades[s.k],0)/done.length) : null;
   const complete = done.length===SKILLS.length;

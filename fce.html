@@ -177,7 +177,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
     </label>
   </div>
   <div class="passrow" id="passRow"></div>
-  <p class="note" style="margin:10px 0 0">Recomendación: media mínima 6,2 y como máximo una destreza suspensa. Con las cuatro aprobadas y media 6,0–6,1: “recomendada, al límite”. El Speaking no cuenta para la media.</p>
+  <p class="note" style="margin:10px 0 0">Resultado del simulacro: APROBADO si la media llega al aprobado del simulacro y tiene como máximo una destreza suspensa; si no, SUSPENSO. Si falta alguna prueba: PRUEBA NO REALIZADA. El Speaking no cuenta.</p>
 </section>
 
 <!-- 02 DATOS -->
@@ -227,7 +227,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   </div>
 </section>
 
-<footer>Alina Iuga · versión 26/11 · 16:50</footer>
+<footer>Alina Iuga · versión 26/11 · 17:05</footer>
 </div>
 
 <script id="core">
@@ -402,35 +402,34 @@ function evaluate(st, level, ctx={}){
   if(att && !ATT[att]) warnings.push('Asistencia “'+st.attendance+'” no está en la escala');
   if(st.classwork && !CW[st.classwork]) warnings.push('Actitud “'+st.classwork+'” no está en la escala');
 
-  /* recomendación */
+  /* resultado del simulacro (APROBADO / SUSPENSO) y aspectos a mejorar */
   const failNames=fails.map(s=>s.name);
-  const incReg = inc.length && st.classwork==='REGULAR';
-  let rec, recLabel, recWhy, recAlt=true;
-  if(inc.length>=2){
-    rec='no'; recLabel='NO RECOMENDADA, de momento, para presentarse al examen.'; recAlt=false;
-    recWhy='No realizó '+list(inc.map(s=>s.name))+', por lo que no hay datos suficientes para valorar su preparación para el examen.';
-  } else if(incReg){
-    rec='no'; recLabel='NO RECOMENDADA, de momento, para presentarse al examen.'; recAlt=false;
-    recWhy='No ha podido evaluarse '+list(inc.map(s=>s.name))+' y su actitud y trabajo en clase es regular, lo que indica falta de compromiso con la preparación del examen.';
+  let rec, recWhy, recAlt=true, resText;
+  const pl=(n,a,b)=>n.length>1?b:a;
+  if(inc.length){
+    rec='lim'; resText='PRUEBA NO REALIZADA'; recAlt=false;
+    recWhy='No realizó '+list(inc.map(s=>s.name))+'. Debe recuperar la práctica de '+pl(inc,'esa parte','esas partes')+' para poder valorar su nivel completo.';
+    if(failNames.length) recWhy+=' Además, debe reforzar '+list(failNames)+'.';
   } else if(mean===null){
-    rec='no'; recAlt=false; recWhy='No hay notas suficientes para valorar su preparación.';
-  } else if(mean>=REC_MIN && fails.length<=1){
-    rec='rec'; recWhy=one('rec',REC_TXT).replace('{m}',fmt(mean));
-    if(fails.length===1) recWhy+=' Debe reforzar especialmente '+failNames[0]+' en las próximas semanas.';
-  } else if(fails.length===0 && mean>=LIMIT_MIN){
-    rec='lim'; recAlt=false;
-    recWhy='Aprueba todas las destrezas, pero está al límite del aprobado. Solo se recomienda que se presente si se compromete a una preparación intensa en las próximas semanas. Sin ella, el riesgo de suspender es alto.';
+    rec='lim'; resText='—'; recAlt=false; recWhy='';
   } else {
-    rec='no';
-    const parts=[];
-    if(fails.length>=2) parts.push('tiene '+(['','una','dos','tres','cuatro'][fails.length])+' destrezas suspensas ('+list(failNames)+'), y para presentarse al examen oficial necesita tener todas las partes escritas bien trabajadas');
-    if(mean<REC_MIN) parts.push((parts.length?'además, ':'')+'su media ('+fmt(mean)+') no alcanza el '+fmt(REC_MIN)+' que consideramos necesario para presentarse con buenas perspectivas');
-    recWhy=parts.join('; ')+'. '+one('rec',NO_END);
-    recWhy=recWhy.charAt(0).toUpperCase()+recWhy.slice(1);
+    const ok = mean>=P.total && fails.length<=1;
+    rec = ok?'rec':'no'; resText = ok?'APROBADO':'SUSPENSO';
+    if(failNames.length){
+      const L=list(failNames);
+      recWhy=one('mej',['Debe reforzar especialmente '+L+' para alcanzar el nivel exigido en todas las destrezas.',
+        'Su prioridad debe ser mejorar '+L+', '+pl(failNames,'que todavía está','que todavía están')+' por debajo del aprobado.',
+        'Le recomendamos centrar su trabajo en '+L+' durante las próximas semanas.']);
+      if(mean<P.total) recWhy+=' También necesita subir su nota global con práctica regular de todas las partes del examen.';
+    } else {
+      const w=done.slice().sort((a,b)=>(st.grades[a.k]/P[a.k])-(st.grades[b.k]/P[b.k]))[0].name;
+      recWhy=one('mej',['Para consolidar su nivel, le conviene seguir trabajando especialmente '+w+', su destreza con la nota más baja.',
+        'Va por buen camino. Su margen de mejora está sobre todo en '+w+'.',
+        'Debe mantener el ritmo de trabajo y prestar especial atención a '+w+'.']);
+      if(mean<P.total+0.2) recWhy+=' Está cerca del límite del aprobado, por lo que no debe bajar el ritmo.';
+    }
   }
-  if(inc.length===1 && !incReg)
-    recWhy='Valoración realizada con las destrezas que sí realizó, ya que '+list(inc.map(s=>s.name))+' no pudo evaluarse. '+recWhy;
-  if(!recLabel) recLabel={rec:'RECOMENDADA para presentarse al examen.', lim:'RECOMENDADA, AL LÍMITE, para presentarse al examen.', no:'NO RECOMENDADA para presentarse al examen.'}[rec];
+  const recLabel='Aspectos a mejorar:';
 
   /* bloques de observaciones */
   const blocks=SKILLS.map(s=>{
@@ -446,10 +445,10 @@ function evaluate(st, level, ctx={}){
   else blocks.push({key:'att',head:'Asistencia:',text:''});
   if(st.classwork){ const c=CW[st.classwork]; blocks.push({key:'cw',alt:!!c,head:'Actitud y trabajo en clase: '+(c?c[0]:st.classwork.toLowerCase())+'.', text:c?one('cw',c[1]):''}); }
   else blocks.push({key:'cw',head:'Actitud y trabajo en clase:',text:''});
-  blocks.push({key:'rec',alt:recAlt,head:recLabel, text:recWhy, rec:true});
+  blocks.push({key:'mej',alt:recAlt,head:recLabel, text:recWhy, rec:true});
 
   return { mean, complete, fails:failNames, rec, warnings, blocks,
-    totalText: inc.length? 'NO CALCULABLE' : (mean===null?'—':fmt(mean)), att };
+    totalText: resText, att };
 }
 
 /* Writing con un solo writing: mira 2.1 y 2.2 en la hoja de puntuaciones */
@@ -681,9 +680,9 @@ function renderGroup(){
   $('stats').innerHTML=`
     <div class="stat"><div class="v">${n}</div><div class="l">alumnas</div></div>
     <div class="stat"><div class="v">${gm===null?'—':fmt(gm)}</div><div class="l">media del grupo</div></div>
-    <div class="stat rec"><div class="v">${c('rec')}</div><div class="l">recomendadas</div></div>
-    <div class="stat lim"><div class="v">${c('lim')}</div><div class="l">al límite</div></div>
-    <div class="stat no"><div class="v">${c('no')}</div><div class="l">no recomendadas</div></div>`;
+    <div class="stat rec"><div class="v">${c('rec')}</div><div class="l">aprobadas</div></div>
+    <div class="stat lim"><div class="v">${c('lim')}</div><div class="l">con pruebas no realizadas</div></div>
+    <div class="stat no"><div class="v">${c('no')}</div><div class="l">suspensas</div></div>`;
   $('skills').innerHTML=SKILLS.map(s=>{
     const g=students.map(x=>x.grades[s.k]).filter(v=>typeof v==='number');
     const avg=g.length?g.reduce((a,b)=>a+b,0)/g.length:null, ok=g.filter(v=>v>=P[s.k]).length;
@@ -696,10 +695,10 @@ function renderGroup(){
   const swHtml=sw.length?`<div class="alerts" style="background:#F1F6FB;border-color:#DCE7F2"><b>Writing calculado sobre un solo writing (nota sobre 20 pasada a 10):</b><ul>${sw.map(s=>`<li><b>${label(s)}:</b> ${String(s.singleWriting).replace(".",",")}/20 → ${fmt(s.grades.writing)}</li>`).join('')}</ul></div>`:'';
   $('alerts').innerHTML=(al.length?`<div class="alerts"><span class="warn">${W}<b>Revisa ${al.length===1?'esto':'estos avisos'}</b></span><ul>${al.join('')}</ul></div>`:'')+swHtml;
   const cell=(g,p)=>g==='INC'?'<td class="g inc">NO REAL.</td>':g===null?'<td class="g inc">—</td>':`<td class="g ${g<p?'fail':''}">${fmt(g)}</td>`;
-  const rl={rec:'Recomendada',lim:'Al límite',no:'No recomendada'};
-  $('tbl').innerHTML=`<thead><tr><th>Alumna</th><th>Curso</th>${SKILLS.map(s=>`<th>${s.name}</th>`).join('')}<th>Media</th><th>Speaking</th><th>Asistencia</th><th>Actitud</th><th>Recomendación</th><th></th></tr></thead><tbody>`+
+  const rl={rec:'Aprobado',lim:'No realizada',no:'Suspenso'};
+  $('tbl').innerHTML=`<thead><tr><th>Alumna</th><th>Curso</th>${SKILLS.map(s=>`<th>${s.name}</th>`).join('')}<th>Media</th><th>Speaking</th><th>Asistencia</th><th>Actitud</th><th>Resultado</th><th></th></tr></thead><tbody>`+
     students.map((s,i)=>{const e=evals[i];return `<tr data-i="${i}"><td><b>${label(s)}</b></td><td>${s.cls}</td>${SKILLS.map(k=>cell(s.grades[k.k],P[k.k])).join('')}
-      <td class="g ${e.mean!==null&&e.mean<P.total?'fail':''}"><b>${e.totalText==='NO CALCULABLE'?'N/C':e.totalText}</b></td><td>${s.speaking}</td><td>${e.att}</td><td>${s.classwork}</td>
+      <td class="g ${e.mean!==null&&e.mean<P.total?'fail':''}"><b>${e.mean===null?'—':fmt(e.mean)}</b></td><td>${s.speaking}</td><td>${e.att}</td><td>${s.classwork}</td>
       <td><span class="pill ${e.rec}">${rl[e.rec]}</span></td><td>${e.warnings.length?`<span class="warn" title="${e.warnings.join(' · ')}">${W}</span>`:''}</td></tr>`;}).join('')+'</tbody>';
   $('tbl').querySelectorAll('tbody tr').forEach(tr=>tr.onclick=()=>{cur=+tr.dataset.i;renderList();renderReport();$('s4').scrollIntoView({behavior:'smooth'});});
 }

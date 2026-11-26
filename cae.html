@@ -126,7 +126,13 @@ table.t tbody tr:hover{background:#FBFAF6}
 .a4 .obs{margin-top:18px}
 .a4 .oh{background:#595959;color:#fff;font-weight:700;font-size:16px;padding:7px 10px;border:1px solid #000;break-after:avoid;page-break-after:avoid}
 .a4 .ob{background:#F9F9F9;border:1px solid #000;border-top-color:#BFBFBF;border-bottom-color:#BFBFBF;margin-top:-1px;padding:7px 12px;text-align:justify;position:relative;break-inside:avoid;page-break-inside:avoid}
-.a4 .ob:last-child{border-bottom-color:#000}
+.a4 .ob:last-of-type{border-bottom-color:#000}
+.a4 .legal{margin-top:26px;text-align:center;font-family:Arial,Helvetica,sans-serif;break-inside:avoid;page-break-inside:avoid}
+.a4 .legal p{margin:0 0 12px}
+.a4 .legal .c1{font-size:12.5px;color:#1F2A44}
+.a4 .legal .c2{font-size:11px;font-weight:700;color:#0B6B2F}
+.a4 .legal .c3{font-size:9.5px;font-weight:700;color:#8C8C8C;line-height:1.45}
+.a4 .legal .lk{color:#1155CC;text-decoration:underline}
 .a4 .ob{padding-right:34px}
 .a4 .shuf{position:absolute;top:6px;right:6px;width:24px;height:24px;border:1px solid #CCC;border-radius:6px;background:#fff;cursor:pointer;font-size:14px;line-height:1;color:#555;font-family:Inter,sans-serif}
 .a4 .shuf:hover{border-color:var(--sage);color:var(--sage-d)}
@@ -227,7 +233,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   </div>
 </section>
 
-<footer>Alina Iuga · versión 26/11 · 17:15</footer>
+<footer>Alina Iuga · versión 26/11 · 18:15</footer>
 </div>
 
 <script id="core">
@@ -483,6 +489,16 @@ function fileName(st, level, curso){
   return 'Informe_Complementaria_'+LEVELS[level].file+'_'+yy+'_'+String(st.num).replace(/[^\w-]/g,'')+'.docx';
 }
 
+
+/* Pie legal de Senara (al final de cada informe) */
+const FOOT_CONTACT='SENARA | Tel.: (+34) 91 301 6070 - 638 646 794 | senara.com | info@senara.com';
+const FOOT_GREEN='Antes de imprimir este mensaje, asegúrate de que es necesario. Proteger el medioambiente está también en tu mano.';
+const FOOT_LEGAL='AVISO LEGAL: De acuerdo a la normativa vigente en materia de Protección de Datos de Carácter Personal y la Ley 34/2002 de Servicios de la Sociedad de la Información y Comercio Electrónico, le informamos que Enseñanza y Cultura S.A. Colegio Senara es el responsable de los datos y su tratamiento, puede encontrar información detallada sobre nuestra política de protección de datos en Aviso Legal. Puede ejercer sus derechos de acceso, rectificación, limitación, supresión, oposición, retirada del consentimiento, a no ser objeto de elaboración de perfiles y portabilidad, mediante comunicación dirigida a la dirección de correo electrónico info@senara.com, adjuntando documento acreditativo de su identidad. La información contenida en el presente mensaje de correo electrónico es confidencial y su acceso únicamente está autorizado al destinatario original del mismo, quedando prohibida cualquier comunicación, divulgación, o reenvío, tanto del mensaje como de su contenido. En el supuesto de que usted no sea el destinatario autorizado, le rogamos borre el contenido del mensaje y nos comunique dicha circunstancia a través de un mensaje de correo electrónico a la dirección info@senara.com.';
+function footHTML(){
+  const lk=t=>`<span class="lk">${t}</span>`;
+  const legal=FOOT_LEGAL.replace('en Aviso Legal','en '+lk('Aviso Legal')).split('info@senara.com').join(lk('info@senara.com'));
+  return `<section class="legal"><p class="c1"><b>SENARA | Tel.: ${lk('(+34) 91 301 6070')} - 638 646 794 | ${lk('senara.com')} | ${lk('info@senara.com')}</b></p><p class="c2">${FOOT_GREEN}</p><p class="c3">${legal}</p></section>`;
+}
 /* ===================== WORD (.docx) ===================== */
 function buildDocx(st, ev, cfg){
   const D=docx;
@@ -556,12 +572,23 @@ function buildDocx(st, ev, cfg){
   });
   const obs=new Table({width:{size:100,type:WidthType.PERCENTAGE},borders:{top:blk,bottom:blk,left:blk,right:blk,insideHorizontal:gry,insideVertical:none},rows:orows});
 
+  function footDocx(){
+    const A='Arial', LK='1155CC';
+    const r=(t,o={})=>new TextRun({text:t,font:A,size:o.size||18,bold:o.bold!==false,color:o.color||'1F2A44',underline:o.u?{}:undefined});
+    const link=(t,url,size,color)=>new D.ExternalHyperlink({link:url,children:[new TextRun({text:t,font:A,size,bold:true,color:LK,underline:{}})]});
+    const p1=new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:480,after:200},keepNext:true,keepLines:true,children:[
+      r('SENARA | Tel.: '),link('(+34) 91 301 6070','tel:+34913016070',18),r(' - 638 646 794 | '),link('senara.com','https://senara.com',18),r(' | '),link('info@senara.com','mailto:info@senara.com',18)]});
+    const p2=new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},keepNext:true,keepLines:true,children:[r(FOOT_GREEN,{size:16,color:'0B6B2F'})]});
+    const parts=FOOT_LEGAL.split(/(Aviso Legal|info@senara\.com)/);
+    const p3=new Paragraph({alignment:AlignmentType.CENTER,keepLines:true,children:parts.filter(x=>x).map(x=>x==='info@senara.com'?link(x,'mailto:info@senara.com',13):(x==='Aviso Legal'?new TextRun({text:x,font:A,size:13,bold:true,color:LK,underline:{}}):r(x,{size:13,color:'8C8C8C'})))});
+    return [p1,p2,p3];
+  }
   return new Document({
     styles:{default:{document:{run:{font:F,size:22}}}},
     sections:[{
       properties:{titlePage:true,page:{size:{width:11906,height:16838},margin:{top:432,bottom:432,left:720,right:720,header:300,footer:300}}},
       headers:{first:header, default:new Header({children:[new Paragraph('')]})},
-      children:[...data, table, new Paragraph({spacing:{after:0},children:[T('')]}), obs]
+      children:[...data, table, new Paragraph({spacing:{after:0},children:[T('')]}), obs, ...footDocx()]
     }]
   });
 }
@@ -726,7 +753,7 @@ function renderReport(){
     </tbody></table>
     <div class="obs"><div class="oh">OBSERVACIONES:</div>
       ${blocksFor(cur).map((b,j)=>`<div class="ob">${b.alt?`<button class="shuf" data-j="${j}" data-k="${b.key}" title="Cambiar frase">↻</button>`:''}<div contenteditable="true" data-j="${j}" data-f="head"><b>${esc(b.head)}</b></div>${b.text!==''||!b.rec?`<div contenteditable="true" data-j="${j}" data-f="text">${esc(b.text)}</div>`:''}</div>`).join('')}
-    </div>`;
+    </div>${footHTML()}`;
   $('a4').querySelectorAll('.shuf').forEach(b=>b.onclick=()=>{
     const k=b.dataset.k, j=+b.dataset.j; shuf[cur]=shuf[cur]||{}; shuf[cur][k]=(shuf[cur][k]||0)+1;
     if(edits[cur]) delete edits[cur][j];
@@ -757,6 +784,7 @@ function pdfPagesHTML(i){
       ${(()=>{const V=valsFor(i); return row('Speaking',null,esc(V.speaking))+'<tr><th>SEGUIMIENTO EN CLASE</th><th>VALORACIÓN</th></tr>'+row('Asistencia',null,esc(V.att))+row('Actitud y trabajo en clase',null,esc(V.classwork));})()}
     </tbody></table>`;
   const rows=blocksFor(i).map(b=>`<div class="ob" style="padding-right:12px"><div><b>${esc(b.head)}</b></div>${b.text?`<div>${esc(b.text)}</div>`:''}</div>`);
+  rows.push(footHTML());
   return {top,rows};
 }
 async function pdfBlob(i){

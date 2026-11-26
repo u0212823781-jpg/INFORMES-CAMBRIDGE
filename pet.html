@@ -233,7 +233,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:34px}
   </div>
 </section>
 
-<footer>Alina Iuga · versión 26/11 · 18:15</footer>
+<footer>Alina Iuga · versión 26/11 · 18:20</footer>
 </div>
 
 <script id="core">
@@ -493,11 +493,11 @@ function fileName(st, level, curso){
 /* Pie legal de Senara (al final de cada informe) */
 const FOOT_CONTACT='SENARA | Tel.: (+34) 91 301 6070 - 638 646 794 | senara.com | info@senara.com';
 const FOOT_GREEN='Antes de imprimir este mensaje, asegúrate de que es necesario. Proteger el medioambiente está también en tu mano.';
-const FOOT_LEGAL='AVISO LEGAL: De acuerdo a la normativa vigente en materia de Protección de Datos de Carácter Personal y la Ley 34/2002 de Servicios de la Sociedad de la Información y Comercio Electrónico, le informamos que Enseñanza y Cultura S.A. Colegio Senara es el responsable de los datos y su tratamiento, puede encontrar información detallada sobre nuestra política de protección de datos en Aviso Legal. Puede ejercer sus derechos de acceso, rectificación, limitación, supresión, oposición, retirada del consentimiento, a no ser objeto de elaboración de perfiles y portabilidad, mediante comunicación dirigida a la dirección de correo electrónico info@senara.com, adjuntando documento acreditativo de su identidad. La información contenida en el presente mensaje de correo electrónico es confidencial y su acceso únicamente está autorizado al destinatario original del mismo, quedando prohibida cualquier comunicación, divulgación, o reenvío, tanto del mensaje como de su contenido. En el supuesto de que usted no sea el destinatario autorizado, le rogamos borre el contenido del mensaje y nos comunique dicha circunstancia a través de un mensaje de correo electrónico a la dirección info@senara.com.';
+const FOOT_LEGAL='AVISO LEGAL: Este mensaje contiene información confidencial cuya divulgación está prohibida por la normativa europea vigente y se dirige exclusivamente a quien figura como su destinatario. Si usted no es el destinatario, le rogamos que nos lo comunique y destruya el mensaje y sus anexos. Si no desea seguir recibiendo comunicaciones, por favor, envíenos un mensaje a info@senara.com. CONFIDENCIALIDAD: Este email es confidencial y para uso exclusivo de su destinatario.';
 function footHTML(){
   const lk=t=>`<span class="lk">${t}</span>`;
   const legal=FOOT_LEGAL.replace('en Aviso Legal','en '+lk('Aviso Legal')).split('info@senara.com').join(lk('info@senara.com'));
-  return `<section class="legal"><p class="c1"><b>SENARA | Tel.: ${lk('(+34) 91 301 6070')} - 638 646 794 | ${lk('senara.com')} | ${lk('info@senara.com')}</b></p><p class="c2">${FOOT_GREEN}</p><p class="c3">${legal}</p></section>`;
+  return `<section class="legal"><p class="c3">${legal}</p></section>`;
 }
 /* ===================== WORD (.docx) ===================== */
 function buildDocx(st, ev, cfg){
@@ -581,7 +581,7 @@ function buildDocx(st, ev, cfg){
     const p2=new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},keepNext:true,keepLines:true,children:[r(FOOT_GREEN,{size:16,color:'0B6B2F'})]});
     const parts=FOOT_LEGAL.split(/(Aviso Legal|info@senara\.com)/);
     const p3=new Paragraph({alignment:AlignmentType.CENTER,keepLines:true,children:parts.filter(x=>x).map(x=>x==='info@senara.com'?link(x,'mailto:info@senara.com',13):(x==='Aviso Legal'?new TextRun({text:x,font:A,size:13,bold:true,color:LK,underline:{}}):r(x,{size:13,color:'8C8C8C'})))});
-    return [p1,p2,p3];
+    return [new Paragraph({spacing:{before:480},children:[]}), p3];
   }
   return new Document({
     styles:{default:{document:{run:{font:F,size:22}}}},
